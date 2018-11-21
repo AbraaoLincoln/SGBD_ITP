@@ -1,13 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "funcoes_aux.h"
 
 int alfabeticamente(char* nome_tabela, char *nome_campo);
 
 //=========================================extras====================================================
 //funcao alfa: ordena alfabeticamente a tabela
-//recebe como parametro um ponteiro de char que aponte para o nome da tabela
+//recebe o nome da tabela e o nome do campo pelo qual a tabela vai ser ordenada
 //retorna 1 se ordenor alfabeticamente
 //retorna 0 se o campo escolhido nao e valido
 int alfabeticamente(char* nome_tabela, char *nome_campo){
@@ -23,10 +19,12 @@ int alfabeticamente(char* nome_tabela, char *nome_campo){
 	tabela = fopen(nome_tabela, "r+");
 	if(tabela == NULL){
 		printf("Erro na abertura do arquivo!\n");
+		fprintf(stderr, "Erro na abertura do arquivo");
 	} 
 	tabela_setup = fopen(tab_setup, "r");
 	if(tabela_setup == NULL){
 		printf("Erro na abertura do arquivo!\n");
+		fprintf(stderr, "Erro na abertura do arquivo");
 	}
 //carregando os dados dos arquivos para as variaveis
 	tab = carrega_tabela(nome_tabela);
@@ -70,6 +68,7 @@ int alfabeticamente(char* nome_tabela, char *nome_campo){
 	pk = (char**) malloc((linhas-1)*sizeof(char*));
 	if(pk ==  NULL){
 		printf("Erro na memoria!\n");
+		fprintf(stderr, "Erro na memoria");
 	}else{
 		for(int i = 0;i < linhas-1;i++){
 			pk[i] = (char*) malloc(1*sizeof(tab_setup));
@@ -84,6 +83,7 @@ int alfabeticamente(char* nome_tabela, char *nome_campo){
 	tab_copia = (char**) malloc((colunas*linhas)*sizeof(char*));
 	if(tab_copia == NULL){
 		printf("Erro na memoria!\n");
+		fprintf(stderr, "Erro na memoria");
 	}else{
 		for(int i = 0;i < colunas*linhas;i++){
 			tab_copia[i] = (char*) malloc(1*sizeof(tab_setup));

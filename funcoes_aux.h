@@ -1,15 +1,11 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-//se as funcoes desse arquivo ja tiverem sido escritas no aquivos main os include guards vao previnir que elas sejam escritas novamente.
-#ifndef FUNCOES_AUX
-#define FUNCOES_AUX
+
 char** carrega_tabela(char *nome_tab);
 int check_int(char *valor);
 int check_float(char *str);
 int check_char(char *str);
 
 //carrega a tabela na memoria
+//recebe o nome da tabela
 //retorna um ponteiro de ponteiro de char(retorna um pointeiro para um vetor de string).
 //retorna o vetor que contem todos os dados da tebela.
 char** carrega_tabela(char *nome_tab){
@@ -22,10 +18,12 @@ char** carrega_tabela(char *nome_tab){
 	tabela = fopen(nome_tab, "r");
 	if(tabela == NULL){
 		printf("Erro na abertura do arquivo!\n");
+		fprintf(stderr, "Erro na abertura do arquivo");
 	}
 	setup_tab = fopen(setup, "r");
 	if(setup_tab == NULL){
 		printf("Erro na abertura do arquivo!\n");
+		fprintf(stderr, "Erro na abertura do arquivo");
 	}
 //lendo do arquivo tabela.setup  a qtd. de colunas e linhas.
 	fseek(setup_tab, 0, SEEK_SET);
@@ -34,6 +32,7 @@ char** carrega_tabela(char *nome_tab){
 	matriz = (char**) malloc((colunas*linhas)*sizeof(char*));
 	if(matriz == NULL){
 		printf("Erro na memoria!\n");
+		fprintf(stderr, "Erro na memoria");
 	}else{
 		for(int i = 0;i < colunas*linhas;i++){
 			matriz[i] = (char*) malloc(1*sizeof(setup));
@@ -95,4 +94,12 @@ int check_char(char *str){
 	}
 	return -1;
 }
-#endif //FUNCOES_AUX
+/*reduz para letra minuscula todas as letras da string passada
+por referência*/
+void abaixar_caixa(char *string){
+	for(int i = 0; i < strlen(string); ++i){
+		if(*(string+i) >= 60 && *(string+i) <= 90){
+			*(string+i) += 32;
+		}
+	}
+}
