@@ -1,8 +1,9 @@
 
+void sintax(char *comando);
 int alfabeticamente(char* nome_tabela, char *nome_campo);
 
 //=========================================extras====================================================
-//funcao alfa: ordena alfabeticamente a tabela
+//funcao alfabeticamente: ordena alfabeticamente a tabela
 //recebe o nome da tabela e o nome do campo pelo qual a tabela vai ser ordenada
 //retorna 1 se ordenor alfabeticamente
 //retorna 0 se o campo escolhido nao e valido
@@ -167,4 +168,46 @@ int alfabeticamente(char* nome_tabela, char *nome_campo){
 	fclose(tabela);
 	fclose(tabela_setup);
 	return 1;
+}
+//funcao sintax
+//recebe o comando
+//exibi na tela a sintaxe do comaando
+
+void sintax(char *comando){
+
+	if(strcmp(comando, "criar_tabela") == 0){
+		printf("Comando criar_tabela:\n\n");
+		printf("sintaxe: criar_tabela nome_tabela tipo nome_campo1,tipo nome_campo2,...,tipo nome_campoN,\n");
+		printf("\nOBS: o nome da tabela nao deve conter espacos, tipo deve ser os tipos primitivos da linguagem C(char, int, float) ou string ");
+		printf("os nomes dos campos não pode ter espacos e devem ser separados por virgulas(inclusive apos o ultimo campo).\n\n");
+	}else if(strcmp(comando, "inserir_linha") == 0){
+		printf("Comando inserir_linha:\n\n");
+		printf("Sintaxe 1: inserir_linha nome_tabela valor1,valor2,valor3,...,valorN,\n");
+		printf("\nOBS: os valores devem ser separados por virgulas(inclusive apos o ultimo valor) e devem estar na mesma ordem que os campos da tabela e ser do tipo do respectivos campos.\n\n");
+		printf("Sintaxe 2: inserir_linha nome_tabela \n");
+		printf("\nSera mostrado os campos da tabela e seus tipos, na mesma ordem em que estao na tabela\n");
+		printf("inseria os valores onde se pede.\n");
+		printf("\nOBS: os valores devem ser separados por virgulas(inclusive apos o ultimo valor) e devem estar na mesma ordem que os campos da tabela e ser do tipo do respectivos campos.\n\n");
+	}else if(strcmp(comando, "mostrar_tabela") == 0){
+		printf("Comando mostra_tabela:\n\n");
+		printf("Sintaxe : mostrar_tabela nome_tabela\n");
+		printf("\nOBS: o nome da tabela nao pode conter espacos.\n\n");
+	}else if(strcmp(comando, "buscar_valor") == 0){
+		printf("comando ainda vai ser definido!\n\n");
+	}else if(strcmp(comando, "apagar_linha") == 0){
+		printf("Comando apagar_linha:\n\n");
+		printf("Sintaxe: apagar_linha nome_tabela chave primaria da linha\n");
+		printf("\nOBS: o nome da tabela nao pode conter espacos e a chave primaria deve existir\n\n");
+	}else if(strcmp(comando, "apagar_tabela") == 0){
+		printf("Comando apagar_tabela:\n\n");
+		printf("Sintaxe : apagar_tabela nome_tabela\n");
+		printf("\nOBS: o nome da tabela nao pode conter espacos.\n\n");
+	}else if(strcmp(comando, "ordenar_afb") == 0){
+		printf("Comando ordenar_afb:\n\n");
+		printf("Sintaxe: ordenar_afb nome_tabela nome_campo\n");
+		printf("\nOBS: o nome da tabela e do campo nao pode conter espacos, o campo dever dos tipo char ou string.\n");
+		printf("Ordena a tabela de forma crescente\n\n");
+	}else{
+		printf("Comando inexistente\n");
+	}
 }

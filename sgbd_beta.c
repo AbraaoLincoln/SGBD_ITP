@@ -16,7 +16,6 @@ typedef struct command{
 
 void separa_comando(char *comand, COMMAND *aux);
 int check_tabela_existe(char* nome);
-//void sintax();
 void exibir_menu();
 
 int main(){
@@ -65,7 +64,11 @@ int main(){
 				}
 			}
 		}else if(strcmp(aux.comando, "sintax") == 0){
-			//sintax();
+			if(aux.nome_tabela[0] == '\0'){
+				printf("Sintaxe: sintax comando\n");
+			}else{
+				sintax(aux.nome_tabela);
+			}
 		}else if(strcmp(aux.comando, "listar_tabelas") == 0){
 			listar_tabelas("lista_tabelas");
 		}else if(strcmp(aux.comando, "apagar_tabela") == 0){
@@ -99,19 +102,6 @@ int main(){
 
 	return 0;
 }
-//==============================================Funcao sintax==============================================================
-//atualizar o comando sintax
-/*
-void sintax(){
-	printf("\nComando criar_tabela:\n");
-	printf("Sintax: criar_tabela nome_tabela tipo campo1,tipo campo2*,...,tipo campoN,\n");
-	printf("OBS: Os campos devem ser separados por virgula(deve ter um virgula no final)\nObrigatoriamente um dos campos deve ser chave primaria para isso sinaliza com '*' como ultimo caracte do nome do campo(o campo deve ser do tipo int)\n");
-	printf("\nComando inserir_linha:\n");
-	printf("Sintax: inserir_linha nome_tabela valor1,valor2,...,valorN,\nOBS: os valores devem ser digitados na mesma ordem que os campos da tabela e devem ser do mesmo tipo\n");
-	printf("\nComando mostrar_tabela:\nSintax: mostrar_tabela nome_tabela\nVai exibir todos os dados da nome_tabela\n");
-	printf("\n");
-}
-*/
 //==============================funcoa para os comandos=============================================
 //separa a string comando em comando, nome_tabela e campos
 //recebe uma variavel do tipo command e uma string com os camandos
@@ -197,8 +187,7 @@ void exibir_menu (){
 	printf(" 5 - buscar_valor\n");
 	printf(" 6 - apagar_linha\n");
 	printf(" 7 - apagar_tabela\n");
-	//printf(" 8 - sintax\n");
-	printf(" 8 - Extras\n    1 - ordenar_afb\n");
+	printf(" 8 - Extras\n    1 - ordenar_afb\n    2 - sintax\n");
 	printf(" 9 - limpar_tela\n");
 	printf("10 - sair\n");
 	printf("=============================\n");
