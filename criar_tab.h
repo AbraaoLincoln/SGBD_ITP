@@ -49,7 +49,7 @@ void criar_tabela(char *nome, char* campo){
 	}else{
 		remove(nome);
 		remove(setup);
-		printf("Erro de Sintax!\n");
+		printf("Erro de Sintaxe!\n");
 	}
 
 	if(checa_pk(campo) == 0){
@@ -143,7 +143,7 @@ int checa_campos(char *campos, FILE *tab,FILE *setup){
 			fprintf(tab, "%s ",aux_string1);
 			y = 0;
 			if(aux_string1[y] == '\0'){
-				printf("Erro de sintax!\n");
+				printf("Erro de sintaxe!\n");
 				return 0;
 			}
 //salvando dados no arquivo tabela.setup 
@@ -304,7 +304,7 @@ void inserir_linha(char *tabela, char *valores){
 				aux_indice = 0;
 				
 				if(checa_valor(valor, i-1, tipos)){
-					printf("Erro de sintax\n");
+					printf("Erro de sintaxe\n");
 					printf("O Valor informado não é do tipo do campo(%s)\n", tipos[i-1]);
 				}else{
 					conta++;

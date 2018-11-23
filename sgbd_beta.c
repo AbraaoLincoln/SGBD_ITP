@@ -91,6 +91,12 @@ int main(){
 					printf("O campo escolhido nao e valido!\n");
 				}
 			}
+		}else if(strcmp(aux.comando, "inserir_coluna") == 0){
+			if(inserir_coluna(aux.nome_tabela, aux.campos)){
+				printf("Coluna criada com sucesso!\n");
+			}else{
+				printf("Erro de sintaxe!\n");
+			}
 		}else if(strcmp(aux.comando, "limpar_tela") == 0){
 			system("clear");
 			exibir_menu();
@@ -187,7 +193,7 @@ void exibir_menu (){
 	printf(" 5 - buscar_valor\n");
 	printf(" 6 - apagar_linha\n");
 	printf(" 7 - apagar_tabela\n");
-	printf(" 8 - Extras\n    1 - ordenar_afb\n    2 - sintax\n");
+	printf(" 8 - Extras\n    1 - ordenar_afb\n    2 - sintax\n    3 - inserir_coluna\n");
 	printf(" 9 - limpar_tela\n");
 	printf("10 - sair\n");
 	printf("=============================\n");
