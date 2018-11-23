@@ -1,6 +1,7 @@
 
 void sintax(char *comando);
 int alfabeticamente(char* nome_tabela, char *nome_campo);
+int inserir_coluna(char *nome_tabela, char *campo);
 
 //=========================================extras====================================================
 //funcao alfabeticamente: ordena alfabeticamente a tabela
@@ -178,7 +179,7 @@ void sintax(char *comando){
 	if(strcmp(comando, "criar_tabela") == 0){
 		printf("Comando criar_tabela:\n\n");
 		printf("sintaxe: criar_tabela nome_tabela tipo nome_campo1,tipo nome_campo2,...,tipo nome_campoN,\n");
-		printf("\nOBS: o nome da tabela nao deve conter espacos, tipo deve ser os tipos primitivos da linguagem C(char, int, float) ou string ");
+		printf("\nOBS: o nome da tabela nao deve conter espacos, tipo deve ser os tipos primitivos da linguagem C (char, int, float) ou string ");
 		printf("os nomes dos campos não pode ter espacos e devem ser separados por virgulas(inclusive apos o ultimo campo).\n\n");
 	}else if(strcmp(comando, "inserir_linha") == 0){
 		printf("Comando inserir_linha:\n\n");
@@ -207,7 +208,117 @@ void sintax(char *comando){
 		printf("Sintaxe: ordenar_afb nome_tabela nome_campo\n");
 		printf("\nOBS: o nome da tabela e do campo nao pode conter espacos, o campo dever dos tipo char ou string.\n");
 		printf("Ordena a tabela de forma crescente\n\n");
+	}else if(strcmp(comando, "inserir_coluna") == 0){
+		printf("Comando inserir_coluna\n\n");
+		printf("Sintaxe: inserir_coluna nome_tabela tipo nome_novoCampo\n");
+		printf("\nOBS: o nome da tabela nao pode ter espaco, tipo deve ser um dos tipos primitivos da linguagem C (char, int, float) ou string, ");
+		printf("o tipo e o nome do novo campo devem ser separando por espaco. O novo campo nao pode ser defenido como chave primaria(uso do caracter '*').\n\n");
 	}else{
 		printf("Comando inexistente\n");
 	}
+}
+//funcao inserir_coluna
+//recebe o nome da tabela e o novo campo
+//retorna
+
+int inserir_coluna(char *nome_tabela, char *campo){
+	FILE *tab, *tab_setup;
+	char **tipos, **tabela, tipo[16], nome_campo[60], tabela_setup[60];
+	int colunas = 0, linhas = 0, espaco = 0, aux = 0, conta_colunas = 0;
+
+	if(tipo_campo(campo)){
+		tabela = carrega_tabela(nome_tabela);
+		//separando o tipo e o nome do campo nas strigs tipo e nome_campo
+		espaco = primeiro_espaco(campo);
+		for(int i = 0;i < espaco;i++){
+			tipo[i] = campo[i];
+			aux++;
+		}
+		tipo[aux] = '\0';
+		aux = 0;
+		espaco++;
+		for(int i = espaco;i < strlen(campo);i++){
+			nome_campo[aux] = campo[i];
+			aux++;
+		}
+		nome_campo[aux] = '\0';
+		//verifica se o nome do novo campo esta definido como chave primaria
+		//se sim, retorna 0 e encerra a funcao
+		for(int i = 0;i < strlen(nome_campo);i++){
+			if(nome_campo[i] == '*'){
+				return 0;
+			}
+		}
+		//abrindo os canais de comunicacao com os arquivos tabela e tabela.setup
+		strcpy(tabela_setup, nome_tabela);
+		strcat(tabela_setup, ".setup");
+
+		tab_setup = fopen(tabela_setup, "r+");
+		if(tab_setup == NULL){
+			printf("Erro na abertura do arquivo!");
+			fprintf(stderr, "Erro na abertura do arquivo!");
+		}else{
+			fscanf(tab_setup, "%d %d\n", &colunas, &linhas);
+			tipos = (char**) malloc((colunas+1)*sizeof(char*));
+			if(tipos == NULL){
+				printf("Erro na memoria!\n");
+				fprintf(stderr, "Erro na memoria");
+			}else{
+				for(int i = 0;i <= colunas;i++){
+					tipos[i] = (char*) malloc((colunas+1)*sizeof(char));
+					if(i != colunas){
+						fscanf(tab_setup, "%s ", tipos[i]);
+					}
+				}
+			}
+		}
+		strcpy(tipos[colunas], tipo);
+		tab = fopen(nome_tabela, "w");
+		//salvando a tabela com o novo campo
+		if(linhas > 1){
+			for(int i = 0;i < colunas*linhas;i++){
+				if(i == colunas){
+					fprintf(tab, "%s\n", nome_campo);
+					conta_colunas = 1;
+				}
+				fprintf(tab, "%s ", tabela[i]);
+				if(conta_colunas == colunas){
+					fprintf(tab, "NULL\n");
+					conta_colunas = 0;
+				}
+				conta_colunas++;
+			}
+		}else{
+			for(int i = 0;i < colunas+1;i++){
+				if(i == colunas){
+					fprintf(tab, "%s\n", nome_campo);
+					break;
+				}
+				fprintf(tab, "%s ", tabela[i]);
+			}
+		}
+		colunas++;
+		//salvando a nova quantidade de colunas e o tipo no arquivo .setup da tabela
+		fseek(tab_setup, 0, SEEK_SET);
+		fprintf(tab_setup, "%d %d\n", colunas, linhas);
+		for(int i = 0;i < colunas;i++){
+			fprintf(tab_setup, "%s ", tipos[i]);
+		}
+		//fechando os canais de comunicacao e liberando a memoria
+			//memoria
+			for(int i = 0;i < colunas;i++){
+				free(tipos[i]);
+			}
+			free(tipos);
+			for(int i = 0;i < colunas;i++){
+				free(tabela[i]);
+			}
+			free(tabela);
+			//streams
+			fclose(tab_setup);
+			fclose(tab);
+	}else{
+		return 0;
+	}
+	return 1;
 }
