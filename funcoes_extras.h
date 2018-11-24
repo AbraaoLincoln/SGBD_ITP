@@ -178,7 +178,7 @@ void sintax(char *comando){
 
 	if(strcmp(comando, "criar_tabela") == 0){
 		printf("Comando criar_tabela:\n\n");
-		printf("sintaxe: criar_tabela nome_tabela tipo nome_campo1,tipo nome_campo2,...,tipo nome_campoN,\n");
+		printf("sintaxe : criar_tabela nome_tabela tipo nome_campo1,int nome_campo2*,...,tipo nome_campoN,\n");
 		printf("\nOBS: o nome da tabela nao deve conter espacos, tipo deve ser os tipos primitivos da linguagem C (char, int, float) ou string ");
 		printf("os nomes dos campos não pode ter espacos e devem ser separados por virgulas(inclusive apos o ultimo campo).\n\n");
 	}else if(strcmp(comando, "inserir_linha") == 0){
@@ -219,12 +219,12 @@ void sintax(char *comando){
 }
 //funcao inserir_coluna
 //recebe o nome da tabela e o novo campo
-//retorna
+//retorna 1 se a coluna foi criada com sucesso, 0 em caso de erro
 
 int inserir_coluna(char *nome_tabela, char *campo){
 	FILE *tab, *tab_setup;
-	char **tipos, **tabela, tipo[16], nome_campo[60], tabela_setup[60];
-	int colunas = 0, linhas = 0, espaco = 0, aux = 0, conta_colunas = 0;
+	char **tipos, **tabela, **entrada_usuario, tipo[16], nome_campo[60], tabela_setup[60], valores[100];
+	int colunas = 0, linhas = 0, espaco = 0, aux = 0, conta_colunas = 0, conta = 0;
 
 	if(tipo_campo(campo)){
 		tabela = carrega_tabela(nome_tabela);
@@ -255,17 +255,15 @@ int inserir_coluna(char *nome_tabela, char *campo){
 
 		tab_setup = fopen(tabela_setup, "r+");
 		if(tab_setup == NULL){
-			printf("Erro na abertura do arquivo!");
 			fprintf(stderr, "Erro na abertura do arquivo!");
 		}else{
 			fscanf(tab_setup, "%d %d\n", &colunas, &linhas);
 			tipos = (char**) malloc((colunas+1)*sizeof(char*));
 			if(tipos == NULL){
-				printf("Erro na memoria!\n");
 				fprintf(stderr, "Erro na memoria");
 			}else{
 				for(int i = 0;i <= colunas;i++){
-					tipos[i] = (char*) malloc((colunas+1)*sizeof(char));
+					tipos[i] = (char*) malloc(1*sizeof(tipo));
 					if(i != colunas){
 						fscanf(tab_setup, "%s ", tipos[i]);
 					}
@@ -274,8 +272,30 @@ int inserir_coluna(char *nome_tabela, char *campo){
 		}
 		strcpy(tipos[colunas], tipo);
 		tab = fopen(nome_tabela, "w");
+		//verifica se a quantidade de valores passado e igual a de campos da tabela
+		if(linhas > 1){
+			//alocando a memoria para guadar os valores da nova coluna
+			entrada_usuario = (char**) malloc((linhas-1)*sizeof(char*));
+			if(entrada_usuario == NULL){
+				fprintf(stderr, "Erro na memoria\n");
+				return 0;
+			}else{
+				for(int i = 0;i < linhas-1;i++){
+					entrada_usuario[i] = malloc(1*sizeof(tabela_setup));
+				}
+			}
+
+			printf("Insira os valores:\n");
+			fscanf(stdin, "%[^\n]", valores);
+			setbuf(stdin, NULL);
+			conta = checa_valor(valores, entrada_usuario, tipos, colunas);
+			if(conta != linhas-1){
+				return 0;
+			}
+		}
 		//salvando a tabela com o novo campo
 		if(linhas > 1){
+			aux = 0;
 			for(int i = 0;i < colunas*linhas;i++){
 				if(i == colunas){
 					fprintf(tab, "%s\n", nome_campo);
@@ -283,23 +303,24 @@ int inserir_coluna(char *nome_tabela, char *campo){
 				}
 				fprintf(tab, "%s ", tabela[i]);
 				if(conta_colunas == colunas){
-					fprintf(tab, "NULL\n");
+					fprintf(tab, "%s\n", entrada_usuario[aux]);
 					conta_colunas = 0;
+					aux++;
 				}
 				conta_colunas++;
 			}
 		}else{
-			for(int i = 0;i < colunas+1;i++){
-				if(i == colunas){
-					fprintf(tab, "%s\n", nome_campo);
-					break;
-				}
+			for(int i = 0;i < colunas;i++){
 				fprintf(tab, "%s ", tabela[i]);
+				if(i == colunas-1){
+					fprintf(tab, "%s\n", nome_campo);
+				}
 			}
 		}
 		colunas++;
 		//salvando a nova quantidade de colunas e o tipo no arquivo .setup da tabela
 		fseek(tab_setup, 0, SEEK_SET);
+		printf("%d-%d\n",colunas,linhas);
 		fprintf(tab_setup, "%d %d\n", colunas, linhas);
 		for(int i = 0;i < colunas;i++){
 			fprintf(tab_setup, "%s ", tipos[i]);
@@ -313,7 +334,11 @@ int inserir_coluna(char *nome_tabela, char *campo){
 			for(int i = 0;i < colunas;i++){
 				free(tabela[i]);
 			}
-			free(tabela);
+			free(tabela);			
+			for(int i = 0;i < linhas-1;i++){
+				free(entrada_usuario[i]);
+			}
+			free(entrada_usuario);			
 			//streams
 			fclose(tab_setup);
 			fclose(tab);
