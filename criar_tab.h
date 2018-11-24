@@ -1,7 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "funcoes_aux.h"
 
 void criar_tabela(char *nome, char* campo);
 int primeiro_espaco(char *campo);
@@ -11,12 +7,14 @@ int checa_sintaxe_comando(char *command);
 int checa_pk(char *campos);
 void inserir_linha(char *tabela, char *valores);
 int checa_pk_valor(char *tab, char *val, int col, int lin);
-int checa_valor(char *valor, int i, char **tipos);
+int checa_valor(char *valores, char **entrada_usuario, char **tipos, int modo);
+int checa_tipo_valor(char *valor, int i, char **tipos);
 void mostrar_campos_tipos(char* nome);
 
 
 //====================================Criar tabela===================================================
 //cria a tabela e os arquivos nome_tabela, tabela.setup e lista_tabelas
+//recebe o noma da tabela e os compas que vao ser criados
 //nao tem retorno.
 void criar_tabela(char *nome, char* campo){
 	FILE *tabela, *setup1, *lista;
@@ -26,14 +24,17 @@ void criar_tabela(char *nome, char* campo){
 	tabela = fopen(nome, "w");
 	if(tabela == NULL){
 		printf("Erro na abertura do arquivo!\n");
+		fprintf(stderr, "Erro na abertura do arquivo");
 	}
 	setup1 = fopen(strcat(setup, ".setup"), "w");
 	if(setup1 == NULL){
 		printf("Erro na abertura do arquivo!\n");
+		fprintf(stderr, "Erro na abertura do arquivo");
 	}
 	lista = fopen("lista_tabelas", "a+");
 	if(lista == NULL){
 		printf("Erro na abertura do arquivo!\n");
+		fprintf(stderr, "Erro na abertura do arquivo");
 	}
 //Salvando nos arquivos os campos e seus tipos.
 //checa se os campos sao validos, se sim criar a tabela, caso contrario nao.
@@ -49,7 +50,7 @@ void criar_tabela(char *nome, char* campo){
 	}else{
 		remove(nome);
 		remove(setup);
-		printf("Erro de Sintax!\n");
+		printf("Erro de Sintaxe!\n");
 	}
 
 	if(checa_pk(campo) == 0){
@@ -75,6 +76,7 @@ int primeiro_espaco(char *campo){
 	return i;
 }
 //Checa se o tipo do campo que o usuario esta tentando inserir e valido.
+//recebe uma string em que o tipo do campo esteja.
 //retorna 1 caso o campo seja valido, 0 caso nao.
 int tipo_campo(char *tipo){
 	char tipo_checa[16];
@@ -99,6 +101,7 @@ int tipo_campo(char *tipo){
 }
 //checa se os campos que o usuario esta tentando adicionar sao todos validos.
 //se os campos forem validos a tabela e criada(tabela.setup tambem).
+//recebe um string com todos os campos e os ponteiros dos arquivos da tabela e do tebela.setup
 //retorna 1 caso todos os campos sejam validos, 0 caso nao. 
 int checa_campos(char *campos, FILE *tab,FILE *setup){
 	int y = 0, conta = 0, virgula = -1, vir_commando = 0, vir_ultima = 0, espaco = 0, aux = 0;
@@ -141,7 +144,8 @@ int checa_campos(char *campos, FILE *tab,FILE *setup){
 			fprintf(tab, "%s ",aux_string1);
 			y = 0;
 			if(aux_string1[y] == '\0'){
-				printf("Erro de sintax!\n");
+				printf("Erro de sintaxe!\n");
+				printf("sintaxe correta: \ncriar_tabela nome_tabela tipo nome_campo1,int nome_campo2*,...,tipo nome_campoN,\n");
 				return 0;
 			}
 //salvando dados no arquivo tabela.setup 
@@ -162,6 +166,7 @@ int checa_campos(char *campos, FILE *tab,FILE *setup){
 	return 1;
 }
 //Faz a checagem se a chave primaria foi inserida no comando criar_tabela.
+//recebe a string que contem os campos a serem criados
 //retorna 1 caso o campo seja valido para ser chave primaria.
 //retorna 0 caso o campo não seja valido.
 int checa_pk(char *campos){
@@ -199,6 +204,7 @@ int checa_pk(char *campos){
 	}
 }
 //checa se a sintax do comando para inserir os campos esta correto.
+//receve a string que contem os campos
 //retorna 1 se a sintax estive correta, 0 caso nao. 
 int checa_sintaxe_comando(char *command){
 	int conta_virgula = 0, conta_espaco = 0;
@@ -221,29 +227,31 @@ int checa_sintaxe_comando(char *command){
 }
 //======================================-inserir Linha-================================================
 //insere uma nova linha na tabela indicada.
+//recebe o noma da tebale e os valores a serem adicionados
 //nao tem retorno.
 void inserir_linha(char *tabela, char *valores){
 	FILE *setup, *tab;
 	char arquivo_setup[60], **tipos, aux[16], **entrada_usuario;
-	char valor[60];
-	int colunas = 0, linhas = 0, conta_virgula = 0, conta = 0;
-	int ultima_virgula = 0, atual_virgula = -1, virgula = 0, aux_indice = 0;
+	int colunas = 0, linhas = 0, conta = 0, conta_virgula = 0;
 //lendo do arquivo tabela.setup o numero de colunas e linhas.
 	strcpy(arquivo_setup, tabela);
 	strcat(arquivo_setup, ".setup");
 	setup = fopen(arquivo_setup, "r+");
 	if(setup == NULL){
 		printf("Erro na abertura do arquivo!\n");
+		fprintf(stderr, "Erro na abertura do arquivo");
 	}
 	fscanf(setup, "%d %d\n", &colunas, &linhas);
 	tab = fopen(tabela, "a+");
 	if(tab == NULL){
 		printf("Erro na abertura do arquivo!\n");
+		fprintf(stderr, "Erro na abertura do arquivo");
 	}
 //armazenando na memoria os tipo de cada coluna da tabela.
 	tipos = (char**) malloc(colunas*sizeof(char*));
 	if(tipos == NULL){
 		printf("Erro na memoria!\n");
+		fprintf(stderr, "Erro na memoria");
 	}else{
 		for(int i = 0;i < colunas;i++){
 			tipos[i] = malloc(1*sizeof(aux));
@@ -256,6 +264,7 @@ void inserir_linha(char *tabela, char *valores){
 	entrada_usuario = (char**) malloc(colunas*sizeof(char*));
 	if(entrada_usuario == NULL){
 		printf("Erro na memoria!\n");
+		fprintf(stderr, "Erro na memoria");
 	}else{
 		for(int i = 0;i < colunas;i++){
 			entrada_usuario[i] = malloc(1*sizeof(arquivo_setup));
@@ -263,7 +272,6 @@ void inserir_linha(char *tabela, char *valores){
 	}
 
 //verificando se a linha e valida se sim adiciona no arquivo, caso contrario retorna erro e nao adiciona a linha
-	//codigo repetido fazer uma funcao.
 	for(int i = 0;i < strlen(valores);i++){
 			if(valores[i] == ','){
 				conta_virgula++;
@@ -273,37 +281,7 @@ void inserir_linha(char *tabela, char *valores){
 	if(valores[strlen(valores)-1] == ',' && conta_virgula == colunas){
 		
 		if(checa_pk_valor(tabela, valores, colunas,linhas)){
-			for(int i = 1;i <= conta_virgula;i++){
-
-				for(int j = 0;j < strlen(valores);j++){
-					if(valores[j] == ','){
-						virgula++;
-						if(virgula == i){
-							ultima_virgula = atual_virgula;
-							atual_virgula = j;
-							virgula = 0;
-							break;
-						}
-					}
-				}
-
-				for(int z = ultima_virgula+1;z < atual_virgula;z++){
-					valor[aux_indice] = valores[z];
-					aux_indice++;
-				}
-				valor[aux_indice] = '\0';
-				aux_indice = 0;
-				
-				if(checa_valor(valor, i-1, tipos)){
-					printf("Erro de sintax\n");
-					printf("O Valor informado não é do tipo do campo(%s)\n", tipos[i-1]);
-				}else{
-					conta++;
-					strcpy(entrada_usuario[i-1], valor);
-				}
-			
-			}
-
+			conta = checa_valor(valores, entrada_usuario, tipos, 0);
 			if(conta == conta_virgula){
 				for(int i = 0;i < colunas;i++){
 					fprintf(tab, "%s ", entrada_usuario[i]);
@@ -321,6 +299,8 @@ void inserir_linha(char *tabela, char *valores){
 
 	}else{
 		printf("Erro de sintax\n");
+		printf("Sintaxe 1 correta: inserir_linha nome_tabela valor1,valor2,valor3,...,valorN,\n");
+		printf("Sintaxe 2 correta: inserir_linha nome_tabela \n");
 	}
 
 //fechando o canal de comunicacao do arquivo
@@ -336,8 +316,69 @@ void inserir_linha(char *tabela, char *valores){
 	}
 	free(tipos);	
 }
+//checa se todos os valores passado pelo usuario e do tipo do campo
+//recebe a string dos valores, vetor de string com os tipo e um vetor de string onde sapara e armazena cada valor valido
+//retorna a quantidade de vezes que o valor e do tipo do campo
+int checa_valor(char *valores, char **entrada_usuario, char **tipos, int modo){
+	char valor[60];
+	int conta_virgula = 0, conta = 0;
+	int ultima_virgula = 0, atual_virgula = -1, virgula = 0, aux_indice = 0;
+
+	for(int i = 0;i < strlen(valores);i++){
+		if(valores[i] == ','){
+			conta_virgula++;
+		}
+	}
+
+	for(int i = 1;i <= conta_virgula;i++){
+
+		for(int j = 0;j < strlen(valores);j++){
+			if(valores[j] == ','){
+				virgula++;
+				if(virgula == i){
+					ultima_virgula = atual_virgula;
+					atual_virgula = j;
+					virgula = 0;
+					break;
+				}
+			}
+		}
+
+		for(int z = ultima_virgula+1;z < atual_virgula;z++){
+			valor[aux_indice] = valores[z];
+			aux_indice++;
+		}
+			valor[aux_indice] = '\0';
+			aux_indice = 0;
+				
+		if(modo == 0){
+			if(checa_tipo_valor(valor, i-1, tipos)){
+				printf("Erro de sintaxe\n");
+				printf("O Valor '%s' nao e do tipo do campo(%s)\n", valor, tipos[i-1]);
+			}else{
+				conta++;
+				strcpy(entrada_usuario[i-1], valor);
+			}
+		}else{
+			if(checa_tipo_valor(valor, modo, tipos)){
+				printf("Erro de sintaxe\n");
+				printf("O Valor '%s' nao e do tipo do campo(%s)\n", valor, tipos[i-1]);
+			}else{
+				conta++;
+				strcpy(entrada_usuario[i-1], valor);
+			}
+		}
+			
+	}
+
+	return conta;
+}
 
 //checa se a chave primaria e unica.
+//recebe:
+//	o nome da tebela onde astão as cheves primairas
+//	o valor da chave primaria atual
+//	a quantidade de colunas e linhas da tebala
 //retorna 1 caso a chave primaria seja unica, 0 caso nao.
 int checa_pk_valor(char *tab, char *val, int col, int lin){
 	char **valores, pk_valor[60];
@@ -398,8 +439,12 @@ int checa_pk_valor(char *tab, char *val, int col, int lin){
 	return 1;
 }
 //checa se o valor que o usuario passou e do tipo do campo.
+//recebe:
+//	o valor do vai ser adicionado no campo
+//	a posicao do campos na tabela
+//  o ponteiro do vetor que contem os tipos dos campos
 //retorna 0 caso o valor seja do tipo do campo, 1 caso nao.
-int checa_valor(char *valor, int i, char **tipos){
+int checa_tipo_valor(char *valor, int i, char **tipos){
 
 	if(strcmp(tipos[i], "int") == 0){
 		if(check_int(valor)){
@@ -437,12 +482,14 @@ void mostrar_campos_tipos(char* nome){
 	setup_tab = fopen(tab_setup, "r");
 	if(setup_tab == NULL){
 		printf("Erro na abertura do arquivo\n");
+		fprintf(stderr, "Erro na abertura do arquivo");
 	}else{
 		fscanf(setup_tab, "%d %d\n", &colunas, &linhas);
 	}
 	tabela = fopen(nome, "r");
 	if(tabela == NULL){
 		printf("Erro na abertura do arquivo\n");
+		fprintf(stderr, "Erro na abertura do arquivo");
 	}
 	//exibindo na tela os campos e seus tipos
 	for(int i = 0;i < colunas;i++){

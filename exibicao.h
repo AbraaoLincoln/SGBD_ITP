@@ -1,7 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "funcoes_aux.h"
 
 void mostrar_tabela(char *nome);
 int alinhamento_coluna(char** vtr,char* anterior, int col, int lin,int x);
@@ -22,6 +18,7 @@ void mostrar_tabela(char *nome){
 	setup_tab = fopen(arquivo_setup, "r");
 	if(setup_tab == NULL){
 		printf("Erro na abertura do arquivo!\n");
+		fprintf(stderr, "Erro na abertura do arquivo");
 	}else{
 		fscanf(setup_tab, "%d %d\n", &colunas, &linhas);
 	}
@@ -53,6 +50,8 @@ void mostrar_tabela(char *nome){
 	fclose(setup_tab);
 }
 //calcula a quantidade de espacos necessario para alinhar as colunas da tabela.
+//recebe o vetor que contém todos os dados da tabela, a string anterior a que vai ser escrita na tela,
+//a quantidade de colunas e linhas da tabela e a coluna atual(0,1,...,atc)
 //retorna a quantidade de espacos.
 int alinhamento_coluna(char** vtr,char* anterior, int col, int lin,int x){
 	int maior_tamanho = 0, aux = 0,jump = 0;
@@ -75,18 +74,25 @@ int alinhamento_coluna(char** vtr,char* anterior, int col, int lin,int x){
 //Listas o nome de todas as tabelas criadas ate o monento.
 void listar_tabelas (char *nome){
 	char vtr[60];
-	int aux;
+	int aux, cont = 0;
 	FILE *arquivo;
 	arquivo = fopen(nome, "r");
 	if (arquivo == NULL){
 		printf("erro na abertura\n");
 	}else{
+		printf("tabelas disponiveis:\n");
 		do{
 			aux = fscanf(arquivo, "%s", vtr);
 			if (aux != (-1)){
-				printf("%s\n", vtr);	
+				printf("	%s\n", vtr);
+				cont++;	
+			}else{
+				if(cont == 0){
+					printf("	nenhum arquivo encontrado\n");
+				}
 			}
 		}while(aux != (-1));
 	}
 	fclose(arquivo);
 }
+//
