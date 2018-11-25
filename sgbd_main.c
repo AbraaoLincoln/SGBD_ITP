@@ -204,6 +204,7 @@ int check_tabela_existe(char* nome){
 		while(aux != -1){
 			aux = fscanf(tabelas, "%s\n", tab_nome);
 			if(strcmp(tab_nome, nome) == 0){
+				fclose(tabelas);
 				return 0;
 			}
 		}
