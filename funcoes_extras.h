@@ -1,16 +1,18 @@
 
 void sintax(char *comando);
-int alfabeticamente(char* nome_tabela, char *nome_campo);
+int ordenar(char* nome_tabela, char *nome_campo, int modo);
 int inserir_coluna(char *nome_tabela, char *campo);
 
 //=========================================extras====================================================
-//funcao alfabeticamente: ordena alfabeticamente a tabela
+//funcao ordenar: ordena alfabeticamente a tabela
 //recebe o nome da tabela e o nome do campo pelo qual a tabela vai ser ordenada
-//retorna 1 se ordenor alfabeticamente
+//retorna 1 se ordenor ordenar
 //retorna 0 se o campo escolhido nao e valido
-int alfabeticamente(char* nome_tabela, char *nome_campo){
-	FILE *tabela, *tabela_setup;
+int ordenar(char* nome_tabela, char *nome_campo, int modo){
+	FILE *tabela, *tabela_setup, *nova_tab, *nova_tab_setup, *lista_tabelas;
+	FILE *tab_temporaria, *temporaria_setup;
 	char **tab, **tab_copia, **pk,*aux_ptr, tab_setup[60], aux_string[16];
+	char escolha_usuario[1], nome_nova_tabela[60], nova_tabela_setup[60], tipo_campo[16];
 	int colunas = 0, linhas = 0;
 	int pk_campo = 0,campo = 0,jump = 0, jump2 = 0, aux = 0;
 	int check_campo = -1;
@@ -28,10 +30,10 @@ int alfabeticamente(char* nome_tabela, char *nome_campo){
 		printf("Erro na abertura do arquivo!\n");
 		fprintf(stderr, "Erro na abertura do arquivo");
 	}
-//carregando os dados dos arquivos para as variaveis
+//carregando os dados dos arquivos tabela e tabela.setup para as variaveis
 	tab = carrega_tabela(nome_tabela);
-	fscanf(tabela_setup, "%d %d", &colunas, &linhas);
-	//verifica se o campo e valido para ser ordenado alfabeticamente
+	fscanf(tabela_setup, "%d %d\n", &colunas, &linhas);
+	//verifica se o campo e valido 
 	for(int i = 0;i < colunas;i++){
 		if(strcmp(tab[i], nome_campo) == 0){
 			check_campo = i;
@@ -46,13 +48,8 @@ int alfabeticamente(char* nome_tabela, char *nome_campo){
 	for(int i = 0; i <= check_campo;i++){
 		fscanf(tabela_setup, "%s ", aux_string);
 	}
-	if(strcmp(aux_string, "string") != 0){
-		if(strcmp(aux_string, "char") != 0){
-			return 0;
-			fclose(tabela);
-			fclose(tabela_setup);
-		}
-	}
+	fseek(tabela_setup, 0, SEEK_SET);
+	fscanf(tabela_setup, "%d %d\n", &colunas, &linhas);
 //criando um vetor so com as chaves primarias
 	//encontrando o campo da cheve primaria
 	for(int i = 0;i < colunas;i++){
@@ -102,58 +99,166 @@ int alfabeticamente(char* nome_tabela, char *nome_campo){
 			break;
 		}
 	}
-
-	jump = campo + colunas;
-	for(int i = 0;i < linhas-1;i++){
-		for(int j = 0;j < strlen(tab_copia[jump]);j++){
-			if(tab_copia[jump][j] > 40 && tab_copia[jump][j] < 91){
-				tab_copia[jump][j] = tab_copia[jump][j] + 32;
-			}
-		}
-		jump += colunas;
-	}
-
-	//comparando as strings
-	jump = campo + colunas;
-	jump2 = campo + colunas;
-	for(int i = 0;i < linhas-1;i++){
-		for(int j = 0;j < linhas-1;j++){
-			if(strcmp(tab_copia[jump],tab_copia[jump2]) < 0){
-				aux_ptr = tab_copia[jump];
-				tab_copia[jump] = tab_copia[jump2];
-				tab_copia[jump2] = aux_ptr;
-				aux_ptr = pk[i];
-				pk[i] = pk[j];
-				pk[j] = aux_ptr;
-			}
-			jump2 += colunas;
-		}
-		jump += colunas;
-		jump2 = campo + colunas;
-	}
-
-	//salvando no arquivo ordenado alfabeticamente
-	fseek(tabela, 0, SEEK_SET);
-	for(int i = 0;i < colunas;i++){
-		fprintf(tabela, "%s ",tab[i]);
-	}
-	fprintf(tabela, "\n");
-	jump = pk_campo + colunas;
-	for(int i = 0;i < linhas-1;i++){
-		for(int j = 0;j < linhas-1;j++){
-			if(strcmp(pk[i], tab_copia[jump]) == 0){
-				aux = (jump - colunas*(j+1));
-				aux = jump - aux;
-				for(int k = 0;k < colunas;k++){
-					fprintf(tabela, "%s ",tab[aux]);
-					aux++;
+	//transformando todos os valores do campo em lower case
+	if(strcmp(aux_string, "string") == 0 || strcmp(aux_string, "char") == 0){
+		jump = campo + colunas;
+		for(int i = 0;i < linhas-1;i++){
+			for(int j = 0;j < strlen(tab_copia[jump]);j++){
+				if(tab_copia[jump][j] > 40 && tab_copia[jump][j] < 91){
+					tab_copia[jump][j] = tab_copia[jump][j] + 32;
 				}
-				break;
 			}
 			jump += colunas;
 		}
+	}
+	//comparando as strings e ordenar(crescente(modo 0) ou descrecente(modo 1))
+	jump = campo + colunas;
+	jump2 = campo + colunas;
+
+	if(modo == 0){
+		//ordena de forma crescente
+		for(int i = 0;i < linhas-1;i++){
+			for(int j = 0;j < linhas-1;j++){
+				if(strcmp(tab_copia[jump],tab_copia[jump2]) < 0){
+					aux_ptr = tab_copia[jump];
+					tab_copia[jump] = tab_copia[jump2];
+					tab_copia[jump2] = aux_ptr;
+					aux_ptr = pk[i];
+					pk[i] = pk[j];
+					pk[j] = aux_ptr;
+				}
+				jump2 += colunas;
+			}
+			jump += colunas;
+			jump2 = campo + colunas;
+		}
+	}else{
+		//ordena de forma descrescente
+		for(int i = 0;i < linhas-1;i++){
+			for(int j = 0;j < linhas-1;j++){
+				if(strcmp(tab_copia[jump],tab_copia[jump2]) > 0){
+					aux_ptr = tab_copia[jump];
+					tab_copia[jump] = tab_copia[jump2];
+					tab_copia[jump2] = aux_ptr;
+					aux_ptr = pk[i];
+					pk[i] = pk[j];
+					pk[j] = aux_ptr;
+				}
+				jump2 += colunas;
+			}
+			jump += colunas;
+			jump2 = campo + colunas;
+		}
+	}
+	//mostra a tabela ordenada para o usuario
+	printf("Tabela %s ordenada:\n", nome_tabela);
+	tab_temporaria = fopen("NULL", "w");
+	for(int i = 0;i < colunas;i++){
+			fprintf(tab_temporaria, "%s ",tab[i]);
+		}
+		fprintf(tab_temporaria, "\n");
 		jump = pk_campo + colunas;
+		for(int i = 0;i < linhas-1;i++){
+			for(int j = 0;j < linhas-1;j++){
+				if(strcmp(pk[i], tab[jump]) == 0){
+					aux = (jump - colunas*(j+1));
+					aux = jump - aux;
+					for(int k = 0;k < colunas;k++){
+						fprintf(tab_temporaria, "%s ",tab[aux]);
+						aux++;
+					}
+					break;
+				}
+				jump += colunas;
+			}
+			jump = pk_campo + colunas;
+			fprintf(tab_temporaria, "\n");
+		}
+
+		temporaria_setup = fopen("NULL.setup", "w");
+		fprintf(temporaria_setup, "%d %d\n", colunas, linhas);
+		for(int i = 0;i < colunas;i++){
+			fscanf(tabela_setup, "%s ", tipo_campo);
+			fprintf(temporaria_setup, "%s ", tipo_campo);
+		}
+
+		fclose(temporaria_setup);
+		fclose(tab_temporaria);
+		mostrar_tabela("NULL");
+		remove("NULL");
+		remove("NULL.setup");
+	//========================================
+	printf("Deseja salvar a tabela ordenada ou exporta?\ns - salva a tabela\ne - exporta a tabela\nn - nao faz nada\n");
+	scanf("%s", escolha_usuario);
+	setbuf(stdin, NULL);
+
+	if(escolha_usuario[0] == 's'){
+		fseek(tabela, 0, SEEK_SET);
+		for(int i = 0;i < colunas;i++){
+			fprintf(tabela, "%s ",tab[i]);
+		}
 		fprintf(tabela, "\n");
+		jump = pk_campo + colunas;
+		for(int i = 0;i < linhas-1;i++){
+			for(int j = 0;j < linhas-1;j++){
+				if(strcmp(pk[i], tab[jump]) == 0){
+					aux = (jump - colunas*(j+1));
+					aux = jump - aux;
+					for(int k = 0;k < colunas;k++){
+						fprintf(tabela, "%s ",tab[aux]);
+						aux++;
+					}
+					break;
+				}
+				jump += colunas;
+			}
+			jump = pk_campo + colunas;
+			fprintf(tabela, "\n");
+		}
+		printf("Tabela ordenada e salva com sucesso!\n");
+	}else if(escolha_usuario[0] == 'e'){
+		printf("Digite o nome da nova tabela:\n");
+		scanf("%s", nome_nova_tabela);
+		setbuf(stdin, NULL);
+		//salvando o nome da nova tabela no arquivo lista_tabelas
+		lista_tabelas = fopen("lista_tabelas", "a+");
+		fprintf(lista_tabelas, "%s\n", nome_nova_tabela);
+		fclose(lista_tabelas);
+		//salvando os dados na nova tabela
+		nova_tab = fopen(nome_nova_tabela, "w");
+		for(int i = 0;i < colunas;i++){
+			fprintf(nova_tab, "%s ",tab[i]);
+		}
+		fprintf(nova_tab, "\n");
+		jump = pk_campo + colunas;
+		for(int i = 0;i < linhas-1;i++){
+			for(int j = 0;j < linhas-1;j++){
+				if(strcmp(pk[i], tab[jump]) == 0){
+					aux = (jump - colunas*(j+1));
+					aux = jump - aux;
+					for(int k = 0;k < colunas;k++){
+						fprintf(nova_tab, "%s ",tab[aux]);
+						aux++;
+					}
+					break;
+				}
+				jump += colunas;
+			}
+			jump = pk_campo + colunas;
+			fprintf(nova_tab, "\n");
+		}
+
+		strcpy(nova_tabela_setup, nome_nova_tabela);
+		strcat(nova_tabela_setup, ".setup");
+		nova_tab_setup = fopen(nova_tabela_setup, "w");
+		fprintf(nova_tab_setup, "%d %d\n", colunas, linhas);
+		for(int i = 0;i < colunas;i++){
+			fscanf(tabela_setup, "%s ", tipo_campo);
+			fprintf(nova_tab_setup, "%s ", tipo_campo);
+		}
+		fclose(nova_tab_setup);
+		fclose(nova_tab);
+		printf("Tabela ordenada e exportada com sucesso!\n");
 	}
 //liberando a memoria e fechando os canais de comunicacao
 	//memoria
@@ -170,10 +275,10 @@ int alfabeticamente(char* nome_tabela, char *nome_campo){
 	fclose(tabela_setup);
 	return 1;
 }
+
 //funcao sintax
 //recebe o comando
 //exibi na tela a sintaxe do comaando
-
 void sintax(char *comando){
 
 	if(strcmp(comando, "criar_tabela") == 0){
@@ -203,11 +308,14 @@ void sintax(char *comando){
 		printf("Comando apagar_tabela:\n\n");
 		printf("Sintaxe : apagar_tabela nome_tabela\n");
 		printf("\nOBS: o nome da tabela nao pode conter espacos.\n\n");
-	}else if(strcmp(comando, "ordenar_afb") == 0){
-		printf("Comando ordenar_afb:\n\n");
-		printf("Sintaxe: ordenar_afb nome_tabela nome_campo\n");
-		printf("\nOBS: o nome da tabela e do campo nao pode conter espacos, o campo dever dos tipo char ou string.\n");
-		printf("Ordena a tabela de forma crescente\n\n");
+	}else if(strcmp(comando, "ordenar_cres") == 0){
+		printf("Comando ordenar_cres:\n\n");
+		printf("Sintaxe: ordenar_cres nome_tabela nome_campo\n");
+		printf("\nOBS: o nome da tabela e do campo nao pode conter espacos, ordena a tabela de forma crescente.\n\n");
+	}else if(strcmp(comando, "ordenar_des") == 0){
+		printf("Comando ordenar_des:\n\n");
+		printf("Sintaxe: ordenar_des nome_tabela nome_campo\n");
+		printf("\nOBS: o nome da tabela e do campo nao pode conter espacos, ordena a tabela de forma descrescente.\n\n");
 	}else if(strcmp(comando, "inserir_coluna") == 0){
 		printf("Comando inserir_coluna\n\n");
 		printf("Sintaxe: inserir_coluna nome_tabela tipo nome_novoCampo\n");

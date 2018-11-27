@@ -96,7 +96,7 @@ int check_char(char *str){
 	return -1;
 }
 /*reduz para letra minuscula todas as letras da string passada
-por referência*/
+por referÃªncia*/
 void abaixar_caixa(char *string){
 	for(int i = 0; i < strlen(string); ++i){
 		if(*(string+i) >= 60 && *(string+i) <= 90){

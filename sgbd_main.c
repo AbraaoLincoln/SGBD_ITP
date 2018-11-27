@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "funcoes_aux.h"
-#include "criar_tab.h"
+#include "criar_inserir.h"
 #include "apagar.h"
 #include "busca.h"
 #include "exibicao.h"
@@ -22,7 +22,7 @@ void exibir_menu();
 int main(){
 	char comando[60], extra[60];
 	COMMAND aux;
-	system("clear");
+	system("cls");
 	exibir_menu();
 	do{
 		printf("Digite o comando >>> ");
@@ -84,17 +84,26 @@ int main(){
 						printf("Tabela apagada com sucesso!\n");
 					}
 				}
-			}else if(strcmp(aux.comando, "ordenar_afb") == 0){
+			}else if(strcmp(aux.comando, "ordenar_cres") == 0 || strcmp(aux.comando, "ordenar_des") == 0){
 				if(check_tabela_existe(aux.nome_tabela)){
 					printf("Tabela %s nao existe\n", aux.nome_tabela);
 					limpa_comando(&aux);
 				}else{
-					if(alfabeticamente(aux.nome_tabela, aux.campos)){
-						printf("Tabela ordena alfabeticamente com sucesso!\n");
-						limpa_comando(&aux);
+					if(strcmp(aux.comando, "ordenar_cres") == 0){
+						if(ordenar(aux.nome_tabela, aux.campos, 0)){
+							printf("Tabela ordena com sucesso!\n");
+							limpa_comando(&aux);
+						}else{
+							printf("O campo escolhido nao e valido!\n");
+							limpa_comando(&aux);
+						}
 					}else{
-						printf("O campo escolhido nao e valido!\n");
-						limpa_comando(&aux);
+						if(ordenar(aux.nome_tabela, aux.campos, 1)){
+							limpa_comando(&aux);
+						}else{
+							printf("O campo escolhido nao e valido!\n");
+							limpa_comando(&aux);
+						}
 					}
 				}
 			}else if(strcmp(aux.comando, "inserir_coluna") == 0){
@@ -124,7 +133,7 @@ int main(){
 			}else if(strcmp(aux.comando, "sair") == 0){
 				printf("programa encerrado\n");
 			}else if(strcmp(aux.comando, "limpar_tela") == 0){
-				system("clear");
+				system("cls");
 				limpa_comando(&aux);
 				exibir_menu();
 			}else{
@@ -222,7 +231,7 @@ void exibir_menu (){
 	printf(" 5 - buscar_valor\n");
 	printf(" 6 - apagar_linha\n");
 	printf(" 7 - apagar_tabela\n");
-	printf(" 8 - Extras\n    1 - ordenar_afb\n    2 - sintax\n    3 - inserir_coluna\n");
+	printf(" 8 - Extras\n    1 - ordenar_cres\n    2 - ordenar_des\n    3 - sintax\n    4 - inserir_coluna\n");
 	printf(" 9 - limpar_tela\n");
 	printf("10 - sair\n");
 	printf("=============================\n");
