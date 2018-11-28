@@ -22,7 +22,7 @@ void exibir_menu();
 int main(){
 	char comando[60], extra[60];
 	COMMAND aux;
-	system("cls");
+	system("clear");
 	exibir_menu();
 	do{
 		printf("Digite o comando >>> ");
@@ -132,7 +132,7 @@ int main(){
 			}else if(strcmp(aux.comando, "sair") == 0){
 				printf("programa encerrado\n");
 			}else if(strcmp(aux.comando, "limpar_tela") == 0){
-				system("cls");
+				system("clear");
 				limpa_comando(&aux);
 				exibir_menu();
 			}else{
