@@ -11,18 +11,35 @@ void mostrar_tabela(char *nome){
 	FILE *setup_tab;
 	char **tabela, arquivo_setup[60];
 	int colunas = 0, linhas = 0, quebra_linha = 0, alinhamento = 0;
+	int maior_tamanho = 0, soma_tamanhos = 0, jump = 0, aux = 0;
 	tabela = carrega_tabela(nome);
 
 	strcpy(arquivo_setup, nome);
 	strcat(arquivo_setup, ".setup");
 	setup_tab = fopen(arquivo_setup, "r");
 	if(setup_tab == NULL){
-		printf("Erro na abertura do arquivo!\n");
 		fprintf(stderr, "Erro na abertura do arquivo");
 	}else{
 		fscanf(setup_tab, "%d %d\n", &colunas, &linhas);
 	}
-	
+	//mostrando a tabela
+	for(int j = 0;j < colunas;j++){
+		jump = j;
+		for(int i = 0;i < linhas;i++){
+			if(strlen(tabela[jump]) > maior_tamanho){
+				maior_tamanho = strlen(tabela[jump]);
+			}
+			jump += colunas;
+		}
+		soma_tamanhos += maior_tamanho;
+	}
+	soma_tamanhos += 2*colunas+1;
+	printf("soma: %d\n", soma_tamanhos);
+	for(int i = 0;i < soma_tamanhos;i++){
+		printf("-");
+	}
+	printf("\n");
+
 	for(int i = 0;i < colunas*linhas;i++){
 		
 		if(quebra_linha != 0 ){
@@ -30,18 +47,37 @@ void mostrar_tabela(char *nome){
 			for(int i = 0;i < alinhamento;i++){
 				printf(" ");
 			}
-			printf("%s",tabela[i]);
+			printf("| %s",tabela[i]);
+			aux += strlen(tabela[i]) + alinhamento;
 		}else{
-			printf("%s",tabela[i]);
+			printf("| %s",tabela[i]);
+			aux += strlen(tabela[i]);
 		}
-		
 		quebra_linha++;
 		if(quebra_linha == colunas){
 			quebra_linha = 0;
+			aux += 2*colunas+1;
+			for(int x = aux; x < soma_tamanhos;x++){
+				printf(" ");
+			}
+			aux = 0;
+			printf("|");
 			printf("\n");
+			if(i == colunas-1){
+				for(int i = 0;i < soma_tamanhos;i++){
+					printf("-");
+				}
+				printf("\n");
+			}
 		}
 		
 	}
+
+	for(int i = 0;i < soma_tamanhos;i++){
+		printf("-");
+	}
+	printf("\n");
+
 //libera a memoria da alocacao dinamica e fecha a stream
 	for(int i = 0;i < colunas*linhas;i++){
 		free(tabela[i]);
