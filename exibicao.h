@@ -32,9 +32,9 @@ void mostrar_tabela(char *nome){
 			jump += colunas;
 		}
 		soma_tamanhos += maior_tamanho;
+		maior_tamanho = 0;
 	}
-	soma_tamanhos += 2*colunas+1;
-	//printf("soma: %d\n", soma_tamanhos);
+	soma_tamanhos += 3*colunas+1;
 	for(int i = 0;i < soma_tamanhos;i++){
 		printf("-");
 	}

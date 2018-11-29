@@ -8,22 +8,24 @@
 #include "exibicao.h"
 #include "busca.h"
 #include "funcoes_extras.h"
+#include "executa_testes.h"
 
 typedef struct command{
 	char comando[60];
-	char nome_tabela[60];
-	char campos[60];
+	char nome_tabela[100];
+	char campos[180];
 }COMMAND;
 
-void waitFor (unsigned int secs);
+//void waitFor (unsigned int secs);
 void limpa_comando(COMMAND *aux);
 void exibir_menu();
 
 int main(){
-	char comando[60], pk[60], aux_edit[60];
+	char comando[300], pk[60], aux_edit[60];
 	COMMAND aux;
 	limpa_comando(&aux);
-/*
+
+	/*
 	system("cls");
 	for(int i = 0; i < 2; ++i){
 		exibir_menu();
@@ -53,7 +55,8 @@ int main(){
 		system("cls");
 	}
 	exibir_menu();
-*/
+	*/
+
 	system("clear");
 	exibir_menu();
 	do{
@@ -165,7 +168,6 @@ int main(){
 					}
 				}
 			}else if(strcmp(aux.comando, "editar_linha") == 0){
-				//int editar_linha(char *str_nome, char *str_campo, char *str_pk);
 				if(sscanf(aux.campos, "%s %s", aux_edit, pk) != EOF){
 					if(check_tabela_existe(aux.nome_tabela) == 0){
 						if(checa_pk_existe(aux.nome_tabela, pk) == 0){
@@ -193,30 +195,29 @@ int main(){
 						printf("Erro: campo invalido\n");
 					}
 				}
+			}else if(strcmp(aux.comando, "ajuda") == 0){
+				ajuda(aux.nome_tabela);
+				limpa_comando(&aux);
 			}else{
 				printf("Erro: comando invalido!\n");
 			}
 		}else{
 			if(strcmp(aux.comando, "ajuda") == 0){
-				if(strcmp(aux.nome_tabela, "NULL") == 0){
-					printf("Sintaxe: ajuda comando\n");
-					limpa_comando(&aux);
-				}else{
-					ajuda(aux.nome_tabela);
-					limpa_comando(&aux);
-				}
+				printf("Sintaxe: ajuda comando\n");
+				limpa_comando(&aux);
 			}else if(strcmp(aux.comando, "listar_tabelas") == 0){
 				listar_tabelas("lista_tabelas");
 				limpa_comando(&aux);
 			}else if(strcmp(aux.comando, "sair") == 0){
 				printf("programa encerrado\n");
-			}else if(strcmp(aux.comando, "limpar_tela") == 0 || strcmp(aux.comando, "lt") == 0){
+			}else if(strcmp(aux.comando, "limpar_tela") == 0){
 				system("clear");
 				limpa_comando(&aux);
 				exibir_menu();
 			}else{
 				printf("Erro: comando invalido!\n");
 				mostrar_sintaxe_correta(aux.comando);
+				limpa_comando(&aux);
 			}
 		}
 
@@ -247,7 +248,9 @@ void exibir_menu (){
 	printf("=============================\n");
 }
 
+/*
 void waitFor (unsigned int secs) {
     unsigned int retTime = time(0) + secs;   // Get finishing time.
     while (time(0) < retTime);               // Loop until it arrives.
 }
+*/

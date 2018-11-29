@@ -317,7 +317,7 @@ void ajuda(char *comando){
 		printf("\nOBS: o nome da tabela nao pode conter espacos.\n\n");
 	}else if(strcmp(comando, "buscar_valor") == 0){
 		printf("Comando buscar_valor:\n\n");
-		printf("Sintaxe : buscar_valor nome_tabela nome_campo\n");
+		printf("Sintaxe : buscar_valor nome_tabela nome_campo\n\n");
 	}else if(strcmp(comando, "apagar_linha") == 0){
 		printf("Comando apagar_linha:\n\n");
 		printf("Sintaxe: apagar_linha nome_tabela chave primaria da linha\n");
@@ -342,15 +342,15 @@ void ajuda(char *comando){
 	}else if(strcmp(comando, "copiar_tabela") == 0){
 		printf("Comando copiar_tabela\n\n");
 		printf("Sintaxe: copiar_tabela nome_tabela novo_nome\n");
-		printf("\nOBS: nome_tabela ou novo_nome nao pode conter espacos");
+		printf("\nOBS: nome_tabela ou novo_nome nao pode conter espacos\n");
 	}else if(strcmp(comando, "apagar_coluna") == 0){
 		printf("Comando apagar_coluna\n\n");
 		printf("Sintaxe: apagar_coluna nome_tabela nome_campo\n");
-		printf("\nOBS: nome_campo nao pode ser o campo referente a chave primaria");
+		printf("\nOBS: nome_campo nao pode ser o campo referente a chave primaria\n");
 	}else if(strcmp(comando, "editar_linha") == 0){
 		printf("Comando editar_linha\n\n");
 		printf("Sintaxe: editar_linha nome_tabela nome_campo chave_primaria\n");
-		printf("\nOBS: o campo da chave primaria nao pode ser editado, e chave_primaria e nome_campo devem existir");
+		printf("\nOBS: o campo da chave primaria nao pode ser editado, e chave_primaria e nome_campo devem existir\n");
 	}else{
 		printf("Comando inexistente\n");
 	}
@@ -362,7 +362,7 @@ void ajuda(char *comando){
 int inserir_coluna(char *nome_tabela, char *campo){
 	FILE *tab, *tab_setup;
 	char **tipos, **tabela, **entrada_usuario, tipo[16], nome_campo[60], tabela_setup[60], valores[100];
-	int colunas = 0, linhas = 0, espaco = 0, aux = 0, conta_colunas = 0, conta = 0;
+	int colunas = 0, linhas = 0, espaco = 0, aux = 0, conta_colunas = 0, conta = 0, ponto = 0;
 
 	//separando o tipo e o nome do campo nas strigs tipo e nome_campo
 	sscanf(campo, "%s %s", tipo, nome_campo);
@@ -398,7 +398,6 @@ int inserir_coluna(char *nome_tabela, char *campo){
 			}
 		}
 		strcpy(tipos[colunas], tipo);
-		tab = fopen(nome_tabela, "w");
 		//verifica se a quantidade de valores passado e igual a de campos da tabela
 		if(linhas > 1){
 			//alocando a memoria para guadar os valores da nova coluna
@@ -415,8 +414,10 @@ int inserir_coluna(char *nome_tabela, char *campo){
 			printf("Insira os valores da nova coluna:\n");
 			fscanf(stdin, "%[^\n]", valores);
 			setbuf(stdin, NULL);
+			//checa se a quantidade de valore passado e a mesma de linhas da tabela
 			conta = checa_valor(valores, entrada_usuario, tipos, colunas);
 			if(conta != linhas-1){
+				printf("Erro: valores invalidos!\n");
 				for(int i = 0;i < colunas;i++){
 					free(tipos[i]);
 				}
@@ -430,10 +431,24 @@ int inserir_coluna(char *nome_tabela, char *campo){
 				}
 				free(entrada_usuario);		
 				fclose(tab_setup);
-				fclose(tab);
 				return 0;
 			}
+
+			if(strcmp(tipo, "float") == 0){
+				for(int i = 0;i < linhas-1;i++){
+					for(int j = 0;j < strlen(entrada_usuario[i]);j++){
+						if(entrada_usuario[i][j] == '.'){
+							ponto = 1;
+							break;
+						}
+					}
+					if(ponto == 0){
+						strcat(entrada_usuario[i], ".0");
+					}
+				}
+			}
 		}
+		tab = fopen(nome_tabela, "w");
 		//salvando a tabela com o novo campo
 		if(linhas > 1){
 			aux = 0;
@@ -502,7 +517,7 @@ int copiar_tabela(char *str_tabela_1, char *str_tabela_2){
 	}else{
 		//falta adicionar na lista de tabelas a tabela copia
 		char str_setup_1[60], str_setup_2[60];
-		FILE *tabela_1, *setup_1, *tabela_2, *setup_2, *lista;
+		FILE *tabela_1, *setup_1, *tabela_2, *setup_2;
 		strcpy(str_setup_1, str_tabela_1);
 		strcat(str_setup_1, ".setup");
 		strcpy(str_setup_2, str_tabela_2);
@@ -511,16 +526,14 @@ int copiar_tabela(char *str_tabela_1, char *str_tabela_2){
 		tabela_2 = fopen(str_tabela_2, "w");
 		setup_1 = fopen(str_setup_1, "r");
 		setup_2 = fopen(str_setup_2, "w");
-		lista = fopen("lista_tabelas", "a+");
 		printf("chegou aqui\n");
 		//checa se ocorreu erro na abertura
-		if(tabela_1 == NULL || tabela_2 == NULL || setup_1 == NULL || setup_2 == NULL || lista == NULL){
+		if(tabela_1 == NULL || tabela_2 == NULL || setup_1 == NULL || setup_2 == NULL){
 			printf("Erro: nao foi possivel realizar a abertura do arquivo\n");
 			fclose(tabela_1);
 			fclose(tabela_2);
 			fclose(setup_1);
 			fclose(setup_2);
-			fclose(lista);
 			remove(str_tabela_2);
 			remove(str_setup_2);
 			return (-1);
@@ -558,13 +571,11 @@ int copiar_tabela(char *str_tabela_1, char *str_tabela_2){
 				free(*(linha+i));
 			}
 			free(linha);
-			fprintf(lista, "%s\n",str_tabela_2);
 			//fecha canais
 			fclose(tabela_1);
 			fclose(tabela_2);
 			fclose(setup_1);
 			fclose(setup_2);
-			fclose(lista);
 			return 0;
 		}
 	}
@@ -730,7 +741,6 @@ int editar_linha(char *str_nome, char *str_campo, char *str_pk){
 				if(strcmp(*(linha+pos_pk), str_pk) == 0 && aux != (-1)){
 					printf("entre novo valor(%s) >>> ", tipo_campo);
 					scanf("%s", valor_novo);
-					setbuf(stdin, NULL);
 					//checa se o valor inserido eh do tipo do campo
 					if(checar_tipo_valor(tipo_campo, valor_novo) == 0){
 						//se sim, o algoritmo substitui na posicao do campo
