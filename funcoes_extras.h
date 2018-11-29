@@ -745,6 +745,7 @@ int editar_linha(char *str_nome, char *str_campo, char *str_pk){
 				if(strcmp(*(linha+pos_pk), str_pk) == 0 && aux != (-1)){
 					printf("entre novo valor(%s) >>> ", tipo_campo);
 					scanf("%s", valor_novo);
+					setbuf(stdin, NULL);
 					//checa se o valor inserido eh do tipo do campo
 					if(checar_tipo_valor(tipo_campo, valor_novo) == 0){
 						//se sim, o algoritmo substitui na posicao do campo
