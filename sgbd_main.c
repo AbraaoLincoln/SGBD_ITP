@@ -8,7 +8,6 @@
 #include "exibicao.h"
 #include "busca.h"
 #include "funcoes_extras.h"
-#include "executa_testes.h"
 
 typedef struct command{
 	char comando[60];
