@@ -34,7 +34,7 @@ void mostrar_tabela(char *nome){
 		soma_tamanhos += maior_tamanho;
 	}
 	soma_tamanhos += 2*colunas+1;
-	printf("soma: %d\n", soma_tamanhos);
+	//printf("soma: %d\n", soma_tamanhos);
 	for(int i = 0;i < soma_tamanhos;i++){
 		printf("-");
 	}
@@ -87,7 +87,7 @@ void mostrar_tabela(char *nome){
 }
 //calcula a quantidade de espacos necessario para alinhar as colunas da tabela.
 //recebe o vetor que contém todos os dados da tabela, a string anterior a que vai ser escrita na tela,
-//a quantidade de colunas e linhas da tabela e a coluna atual(0,1,...,atc)
+//a quantidade de colunas e linhas da tabela e a coluna atual(0,1,...,etc)
 //retorna a quantidade de espacos.
 int alinhamento_coluna(char** vtr,char* anterior, int col, int lin,int x){
 	int maior_tamanho = 0, aux = 0,jump = 0;
@@ -112,7 +112,7 @@ void listar_tabelas (char *nome){
 	char vtr[60];
 	int aux, cont = 0;
 	FILE *arquivo;
-	arquivo = fopen(nome, "r");
+	arquivo = fopen(nome, "a+");
 	if (arquivo == NULL){
 		printf("erro na abertura\n");
 	}else{

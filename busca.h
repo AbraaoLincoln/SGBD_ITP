@@ -1,4 +1,3 @@
-
 int diferenca_strings (char *str_1, char *str_2);
 int busca_aprox_string (char *str_orig, char *str_comp, float precisao);
 int busca_aprox_float (double n_ref, double n_comp, float precisao);
@@ -82,7 +81,7 @@ int busca_aprox_string (char *str_orig, char *str_comp, float precisao){
 		passe = strlen(str_comp)*fator;
 	}
 	if (diferenca_strings(str_orig, str_comp) <= passe){
-		printf("%s\n", str_comp);
+		//printf("%s\n", str_comp);
 		return 1;
 	}
 	return 0;
@@ -94,7 +93,7 @@ int busca_aprox_float (double n_ref, double n_comp, float precisao){
 	float passe, fator = 1-(precisao/100);
 	passe = n_ref*fator;
 	if (abs(n_ref-n_comp) <= passe){
-		printf("%.2f\n", n_comp);
+		//printf("%.2f\n", n_comp);
 		return 1;
 	}
 	return 0;
@@ -105,7 +104,7 @@ int busca_aprox_int (long n_ref, long n_comp, float precisao){
 	float passe, fator = 1-(precisao/100);
 	passe = n_ref*fator;
 	if (abs(n_ref-n_comp) <= passe){
-		printf("%ld\n", n_comp);
+		//printf("%ld\n", n_comp);
 		return 1;
 	}
 	return 0;
@@ -124,7 +123,8 @@ int busca_aprox_int (long n_ref, long n_comp, float precisao){
  de acordo com o modo selecionado*/
 int buscar_valores (char *str_nome, char *str_campo, char *str_valor, int modo){
 	/*canais para a tabela e o setup*/
-	FILE *tabela, *setup;
+	FILE *tabela, *setup, *result, *setup_result;
+	//result sera uma tabela temporaria para salvar os resultados
 	/*string aux para abrir o setup e string para salvar o tipo da variavel
 	A str_linha eh alocada de acordo com o arquivo setup, ela recebe uma linha
 	onde cada celula tem buffer de 60 caracteres*/
@@ -132,18 +132,25 @@ int buscar_valores (char *str_nome, char *str_campo, char *str_valor, int modo){
 	/*variaveis para o numero de linha, coluna e coluna em que o campo se localiza
 	a int aux eh usada para checar quando chega o fim do arquivo e aux_2 eh utilizada
 	durante a checagem do valor inserido*/
-	int n_lin, n_col, col_campo = (-1), aux, aux_2 = 0;
+	int n_lin, n_col, col_campo = (-1), aux, aux_2 = 0, n_lin_result = 0;
 	/*atribuindo valores para str_aux*/
 	strcpy(str_aux, str_nome);
 	strcat(str_aux,".setup");
 	/*abrindo canais*/
 	tabela = fopen(str_nome, "r");
 	setup = fopen(str_aux, "r");
-	if(tabela == NULL || setup == NULL){
+	result = fopen("resultados", "w");
+	setup_result = fopen("resultados.setup", "w");
+	if(tabela == NULL || setup == NULL || result == NULL || setup_result == NULL){
 		/*fechando os canais*/
 		printf("erro na abertura do arquivo\n");
 		fclose(tabela);
 		fclose(setup);
+		fclose(result);
+		fclose(setup_result);
+		remove("resultados");
+		remove("resultados.setup");
+		setbuf(stdin, NULL);
 		return 1;
 	}else{
 		/*recebendo os valores de linhas e colunas da tabela e alocando valores para
@@ -159,13 +166,15 @@ int buscar_valores (char *str_nome, char *str_campo, char *str_valor, int modo){
 		ou seja, vamos ter que comecar do inicio da proxima*/
 		for(int i = 0; i < n_col; ++i){
 			fscanf(tabela, "%s", *(str_linha+i));
+			fprintf(result, "%s ", *(str_linha+i));
 			if(strcmp(*(str_linha+i), str_campo) == 0){
 				col_campo = i;
 			}
 		}
+		fprintf(result, "\n");
 		//checa se o campo existe
 		if(col_campo == (-1)){
-			printf("campo invalido\n");
+			printf("erro: campo invalido\n");
 		}else{
 			/*checando qual eh o tipo de variavel do campo indicado
 			obs: aqui pode parar quando achar o tipo*/
@@ -187,8 +196,9 @@ int buscar_valores (char *str_nome, char *str_campo, char *str_valor, int modo){
 				if(check_char(str_valor) != 0){
 					printf("Erro: %s nao eh %s\n", str_valor, str_tipo);
 				}else{aux_2 = 1;}
+			}else if(strcmp("string", str_tipo) == 0){
+				aux_2 = 1;
 			}
-			
 		}
 		/*checando qual o tipo descoberto para executar o respectivo algoritmo*/
 		/*checando para int*/
@@ -206,7 +216,7 @@ int buscar_valores (char *str_nome, char *str_campo, char *str_valor, int modo){
 					printf("valor invalido\n");
 				}
 			}
-			printf("\nvalores encontrados:\n");
+			printf("Valores encontrados:\n");
 			/*ate o fim do arquivo checa de acordo com o modo escolhido se os valores do
 			campo satisfazem a condicao*/
 			do{
@@ -218,37 +228,64 @@ int buscar_valores (char *str_nome, char *str_campo, char *str_valor, int modo){
 					switch(modo){
 						case 1:
 							if(n_comp > n_ref){
-								printf("%ld \n", n_comp);
+								for(int i = 0; i < n_col; ++i){
+									fprintf(result, "%s ", *(str_linha+i));
+								}
+								fprintf(result, "\n");
+								n_lin_result++;
 								cont++;
 							}
 							break;
 						case 2:
 							if(n_comp >= n_ref){
-								printf("%ld \n", n_comp);
+								for(int i = 0; i < n_col; ++i){
+									fprintf(result, "%s ", *(str_linha+i));
+								}
+								fprintf(result, "\n");
+								n_lin_result++;
 								cont++;
 							}
 							break;
 						case 3:
 							if(n_comp < n_ref){
-								printf("%ld \n", n_comp);
+								for(int i = 0; i < n_col; ++i){
+									fprintf(result, "%s ", *(str_linha+i));
+								}
+								fprintf(result, "\n");
+								n_lin_result++;
 								cont++;
 							}
 							break;
 						case 4:
 							if(n_comp <= n_ref){
-								printf("%ld \n", n_comp);
+								for(int i = 0; i < n_col; ++i){
+									fprintf(result, "%s ", *(str_linha+i));
+								}
+								fprintf(result, "\n");
+								n_lin_result++;
 								cont++;
 							}
 							break;
 						case 5:
 							if(n_comp == n_ref){
-								printf("%ld \n", n_comp);
+								for(int i = 0; i < n_col; ++i){
+									fprintf(result, "%s ", *(str_linha+i));
+								}
+								fprintf(result, "\n");
+								n_lin_result++;
 								cont++;
 							}
 							break;
 						case 6:
 							if(N>=0 && N<=100){
-								cont += busca_aprox_int(n_ref, n_comp, N);
+								if(busca_aprox_int(n_ref, n_comp, N) == 1){
+									for(int i = 0; i < n_col; ++i){
+										fprintf(result, "%s ", *(str_linha+i));
+									}
+									fprintf(result, "\n");
+									n_lin_result++;
+									cont++;
+								}
 							}
 							break;
 						default:
@@ -258,6 +295,11 @@ int buscar_valores (char *str_nome, char *str_campo, char *str_valor, int modo){
 			}while(aux != (-1));//-1 >>> EOF
 			if (cont == 0){
 				printf("nenhum valor encontrado\n");
+			}else{
+				fclose(result);
+				fprintf(setup_result, "%d %d\n",n_col, n_lin_result+1);
+				fclose(setup_result);
+				mostrar_tabela("resultados");
 			}
 		/*checando para float*/
 		}else if(strcmp("float", str_tipo) == 0 && aux_2 == 1){
@@ -273,7 +315,7 @@ int buscar_valores (char *str_nome, char *str_campo, char *str_valor, int modo){
 					printf("valor invalido\n");
 				}
 			}
-			printf("\nvalores encontrados:\n");
+			printf("Valores encontrados:\n");
 			do{
 				for(int i = 0; i < n_col; ++i){
 					aux = fscanf(tabela, "%s", *(str_linha+i));
@@ -283,37 +325,64 @@ int buscar_valores (char *str_nome, char *str_campo, char *str_valor, int modo){
 					switch(modo){
 						case 1:
 							if(n_comp > n_ref){
-								printf("%.2f \n", n_comp);
+								for(int i = 0; i < n_col; ++i){
+									fprintf(result, "%s ", *(str_linha+i));
+								}
+								fprintf(result, "\n");
+								n_lin_result++;
 								cont++;
 							}
 							break;
 						case 2:
 							if(n_comp >= n_ref){
-								printf("%.2f \n", n_comp);
+								for(int i = 0; i < n_col; ++i){
+									fprintf(result, "%s ", *(str_linha+i));
+								}
+								fprintf(result, "\n");
+								n_lin_result++;
 								cont++;
 							}
 							break;
 						case 3:
 							if(n_comp < n_ref){
-								printf("%.2f \n", n_comp);
+								for(int i = 0; i < n_col; ++i){
+									fprintf(result, "%s ", *(str_linha+i));
+								}
+								fprintf(result, "\n");
+								n_lin_result++;
 								cont++;
 							}
 							break;
 						case 4:
 							if(n_comp <= n_ref){
-								printf("%.2f \n", n_comp);
+								for(int i = 0; i < n_col; ++i){
+									fprintf(result, "%s ", *(str_linha+i));
+								}
+								fprintf(result, "\n");
+								n_lin_result++;
 								cont++;
 							}
 							break;
 						case 5:
 							if(n_comp == n_ref){
-								printf("%.2f \n", n_comp);
+								for(int i = 0; i < n_col; ++i){
+									fprintf(result, "%s ", *(str_linha+i));
+								}
+								fprintf(result, "\n");
+								n_lin_result++;
 								cont++;
 							}
 							break;
 						case 6:
 							if(N>=0 && N<=100){
-								cont += busca_aprox_float(n_ref, n_comp, N);
+								if(busca_aprox_float(n_ref, n_comp, N) == 1){
+									for(int i = 0; i < n_col; ++i){
+										fprintf(result, "%s ", *(str_linha+i));
+									}
+									fprintf(result, "\n");
+									n_lin_result++;
+									cont++;
+								}
 							}
 							break;
 						default:
@@ -323,6 +392,11 @@ int buscar_valores (char *str_nome, char *str_campo, char *str_valor, int modo){
 			}while(aux != (-1));
 			if (cont == 0){
 				printf("nenhum valor encontrado\n");
+			}else{
+				fprintf(setup_result, "%d %d\n",n_col, n_lin_result+1);
+				fclose(setup_result);
+				fclose(result);
+				mostrar_tabela("resultados");
 			}
 		/*caso nao seja float ou int sera string ou char, que eh uma string
 		obs: BUFFER = 180*/
@@ -342,7 +416,7 @@ int buscar_valores (char *str_nome, char *str_campo, char *str_valor, int modo){
 						printf("valor invalido\n");
 					}
 				}
-				printf("\nvalores encontrados:\n");
+				printf("Valores encontrados:\n");
 				do{
 					for(int i = 0; i < n_col; ++i){
 						aux = fscanf(tabela, "%s", *(str_linha+i));
@@ -353,37 +427,64 @@ int buscar_valores (char *str_nome, char *str_campo, char *str_valor, int modo){
 						switch(modo){
 							case 1:
 								if(strcmp(str_ref, str_comp) < 0){
-									printf("%s\n", *(str_linha+col_campo));
+									for(int i = 0; i < n_col; ++i){
+										fprintf(result, "%s ", *(str_linha+i));
+									}
+									fprintf(result, "\n");
+									n_lin_result++;
 									cont++;
 								}
 								break;
 							case 2:
 								if(strcmp(str_ref, str_comp) <= 0){
-									printf("%s\n", *(str_linha+col_campo));
+									for(int i = 0; i < n_col; ++i){
+										fprintf(result, "%s ", *(str_linha+i));
+									}
+									fprintf(result, "\n");
+									n_lin_result++;
 									cont++;
 								}
 								break;
 							case 3:
 								if(strcmp(str_ref, str_comp) > 0){
-									printf("%s\n", *(str_linha+col_campo));
+									for(int i = 0; i < n_col; ++i){
+										fprintf(result, "%s ", *(str_linha+i));
+									}
+									fprintf(result, "\n");
+									n_lin_result++;
 									cont++;
 								}
 								break;
 							case 4:
 								if(strcmp(str_ref, str_comp) >= 0){
-									printf("%s\n", *(str_linha+col_campo));
+									for(int i = 0; i < n_col; ++i){
+										fprintf(result, "%s ", *(str_linha+i));
+									}
+									fprintf(result, "\n");
+									n_lin_result++;
 									cont++;
 								}
 								break;
 							case 5:
 								if(strcmp(str_ref, str_comp) == 0){
-									printf("%s\n", *(str_linha+col_campo));
+									for(int i = 0; i < n_col; ++i){
+										fprintf(result, "%s ", *(str_linha+i));
+									}
+									fprintf(result, "\n");
+									n_lin_result++;
 									cont++;
 								}
 								break;
 							case 6:
 								if(N>=0 && N<=100){
-									cont += busca_aprox_string(str_valor, *(str_linha+col_campo), N);
+									if(busca_aprox_string(str_valor, *(str_linha+col_campo), N) == 1){
+										for(int i = 0; i < n_col; ++i){
+											fprintf(result, "%s ", *(str_linha+i));
+										}
+										fprintf(result, "\n");
+										n_lin_result++;
+										cont++;
+									}
 								}
 								break;
 							default:
@@ -393,6 +494,11 @@ int buscar_valores (char *str_nome, char *str_campo, char *str_valor, int modo){
 				}while(aux != -1);
 				if(cont == 0){
 					printf("nenhum valor encontrado\n");
+				}else{
+					fprintf(setup_result, "%d %d\n",n_col, n_lin_result+1);
+					fclose(setup_result);
+					fclose(result);
+					mostrar_tabela("resultados");
 				}
 			}
 		}
@@ -405,6 +511,9 @@ int buscar_valores (char *str_nome, char *str_campo, char *str_valor, int modo){
 	//fechando os canais
 	fclose(tabela);
 	fclose(setup);
+	remove("resultados");
+	remove("resultados.setup");
+	setbuf(stdin, NULL);
 	return 0;
 }
 
@@ -419,6 +528,7 @@ int main_busca (char *str_nome, char *str_campo){
 	/*imprimindo o menu e pedindo o comando*/
 	printf("Opcoes de busca:\n	1* valores_maiores\n	2* valores_maiores_igual\n	3* valores_iguais\n	4* valores_menores\n	5* valores_menores_igual\n	6* valores_proximos\nDigite o comando >>> ");
 	fscanf(stdin,"%s %s", comando, valor_busca);
+	setbuf(stdin, NULL);
 	/*checando o comando para ver qual eh o comando a ser executado*/
 	if(strcmp("valores_maiores", comando) == 0){
 		buscar_valores(str_nome, str_campo, valor_busca, 1);
@@ -433,7 +543,9 @@ int main_busca (char *str_nome, char *str_campo){
 	}else if(strcmp("valores_proximos", comando) == 0){
 		buscar_valores(str_nome, str_campo, valor_busca, 6);
 	}else{
-		printf("comando invalido\n");
+		printf("Comando invalido\n");
+		printf("Comando valores_condicao:\n\n");
+		printf("Sintaxe : valores_condicao valor_de_busca\n");
 		return 1;
 	}
 	return 0;

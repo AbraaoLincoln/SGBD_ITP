@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "funcoes_aux.h"
 #include "criar_inserir.h"
 #include "apagar.h"
-#include "busca.h"
 #include "exibicao.h"
+#include "busca.h"
 #include "funcoes_extras.h"
 
 typedef struct command{
@@ -14,23 +15,54 @@ typedef struct command{
 	char campos[60];
 }COMMAND;
 
-void separa_comando(char *comand, COMMAND *aux);
-int check_tabela_existe(char* nome);
+void waitFor (unsigned int secs);
 void limpa_comando(COMMAND *aux);
 void exibir_menu();
 
 int main(){
-	char comando[60], extra[60];
+	char comando[60], pk[60], aux_edit[60];
 	COMMAND aux;
-	system("clear");
+	limpa_comando(&aux);
+
+	system("cls");
+	for(int i = 0; i < 2; ++i){
+		exibir_menu();
+		printf("\n\n");
+		printf("O o o o o\n");
+		waitFor(1);
+		system("cls");
+		exibir_menu();
+		printf("\n\n");
+		printf("o O o o o\n");
+		waitFor(1);
+		system("cls");
+		exibir_menu();
+		printf("\n\n");
+		printf("o o O o o\n");
+		waitFor(1);
+		system("cls");
+		exibir_menu();
+		printf("\n\n");
+		printf("o o o O o\n");
+		waitFor(1);
+		system("cls");
+		exibir_menu();
+		printf("\n\n");
+		printf("o o o o O\n");
+		waitFor(1);
+		system("cls");
+	}
 	exibir_menu();
+
+	//system("clear");
+	//exibir_menu();
 	do{
 		printf("Digite o comando >>> ");
 		fscanf(stdin, "%[^\n]",comando);
 		setbuf(stdin, NULL);
-		separa_comando(comando, &aux);
+		sscanf(comando, "%s %s %[^\n]", aux.comando, aux.nome_tabela, aux.campos);
 
-		if(aux.nome_tabela[0] != '\0' && strcmp(aux.nome_tabela, "NULL") != 0){
+		if(strcmp(aux.nome_tabela, "NULL") != 0){
 			if(strcmp(aux.comando, "criar_tabela") == 0){
 				if(check_tabela_existe(aux.nome_tabela)){
 					criar_tabela(aux.nome_tabela, aux.campos);
@@ -44,9 +76,9 @@ int main(){
 					printf("Tabela %s nao existe\n", aux.nome_tabela);
 					limpa_comando(&aux);
 				}else{
-					if(aux.campos[0] == '\0'){
+					if(strcmp(aux.campos, "NULL") == 0){
 						mostrar_campos_tipos(aux.nome_tabela);
-						printf("Insira os valores:\n");
+						printf("Insira os valores da nova linha:\n");
 						fscanf(stdin, "%[^\n]", aux.campos);
 						setbuf(stdin, NULL);
 						inserir_linha(aux.nome_tabela, aux.campos);
@@ -72,6 +104,8 @@ int main(){
 					if(apagar_linha (aux.nome_tabela, aux.campos) == 0){
 						limpa_comando(&aux);
 						printf("Linha apagada com sucesso!\n");
+					}else{
+						printf("Chave primaria invalida\n");
 					}
 				}
 			}else if(strcmp(aux.comando, "apagar_tabela") == 0){
@@ -114,16 +148,49 @@ int main(){
 					mostrar_sintaxe_correta(aux.comando);
 					limpa_comando(&aux);
 				}
+			}else if(strcmp(aux.comando, "copiar_tabela") == 0){
+				if(strcmp(aux.nome_tabela, "NULL") == 0 || strcmp(aux.campos, "NULL") == 0){
+					printf("Erro de sintaxe!\n");
+					mostrar_sintaxe_correta(aux.comando);
+				}else{
+					copiar_tabela(aux.nome_tabela, aux.campos);
+				}
+			}else if(strcmp(aux.comando, "apagar_coluna") == 0){
+				if(strcmp(aux.nome_tabela, "NULL") == 0 || strcmp(aux.campos, "NULL") == 0){
+					printf("Erro de sintaxe!\n");
+					mostrar_sintaxe_correta(aux.comando);
+				}else{
+					if(apagar_coluna(aux.nome_tabela, aux.campos) == 0){
+						printf("coluna apaga com sucesso\n");
+					}
+				}
+			}else if(strcmp(aux.comando, "editar_linha") == 0){
+				//int editar_linha(char *str_nome, char *str_campo, char *str_pk);
+				if(sscanf(aux.campos, "%s %s", aux_edit, pk) != EOF){
+					if(check_tabela_existe(aux.nome_tabela) == 0){
+						if(checa_pk_existe(aux.nome_tabela, pk) == 0){
+					 		editar_linha(aux.nome_tabela, aux_edit, pk);
+					 	}else{
+					 		printf("Chave primaria invalida\n");
+					 		mostrar_sintaxe_correta(aux.comando);
+					 	}
+					}else{
+						printf("Tabela %s nao existe\n", aux.nome_tabela);
+					}
+				}else{
+					printf("Erro de sintaxe\n");
+					mostrar_sintaxe_correta(aux.comando);
+				}
 			}else{
 				printf("Erro: comando invalido!\n");
 			}
 		}else{
-			if(strcmp(aux.comando, "sintax") == 0){
-				if(aux.nome_tabela[0] == '\0'){
-					printf("Sintaxe: sintax comando\n");
+			if(strcmp(aux.comando, "ajuda") == 0){
+				if(strcmp(aux.nome_tabela, "NULL") == 0){
+					printf("Sintaxe: ajuda comando\n");
 					limpa_comando(&aux);
 				}else{
-					sintax(aux.nome_tabela);
+					ajuda(aux.nome_tabela);
 					limpa_comando(&aux);
 				}
 			}else if(strcmp(aux.comando, "listar_tabelas") == 0){
@@ -145,81 +212,13 @@ int main(){
 
 	return 0;
 }
-//==============================funcoa para os comandos=============================================
-//separa a string comando em comando, nome_tabela e campos
-//recebe uma variavel do tipo command e uma string com os camandos
-void separa_comando(char *comand, COMMAND *aux){
-	int espaco1 = 0,espaco2 = 0,j = 0, conta_espaco = 0;
-
-	for(int i = 0;i < strlen(comand);i++){
-		if(comand[i] == ' '){
-			espaco1 = i;
-			break;
-		}
-	}
-	
-	for(int i = 0;i < strlen(comand);i++){
-		if(comand[i] == ' '){
-			conta_espaco++;
-			if(conta_espaco == 2){
-				espaco2 = i;
-				break;
-			}
-		}
-	}
-
-	if(espaco2 == 0){
-		espaco2 = strlen(comand);
-	}
-	
-	if(espaco1 != 0){
-
-		for(int i = 0;i < espaco1;i++){
-			aux->comando[i] = comand[i];
-			j++;
-		}
-		aux->comando[j] = '\0';
-		j=0;
-		for(int i = espaco1+1;i < espaco2;i++){
-			aux->nome_tabela[j] = comand[i];
-			j++;
-		}
-		aux->nome_tabela[j] = '\0';
-		j=0;
-		for(int i = espaco2+1;i < strlen(comand);i++){
-			aux->campos[j] = comand[i];
-			j++;
-		}
-		aux->campos[j] = '\0';
-	}else{
-		strcpy(aux->comando, comand);
-	}
-	
+//atribui a string "NULL" para todos os campos da struct do tipo COMMAND
+//recebe uma struct do tipo COMMAND
+void limpa_comando(COMMAND *aux){
+	strcpy(aux->comando, "NULL");
+	strcpy(aux->nome_tabela, "NULL");
+	strcpy(aux->campos, "NULL");
 }
-//checa se a tabela existe
-//retorna 1 se a tabela não existe
-//retorna 0 caso a tabela exista
-int check_tabela_existe(char* nome){
-	FILE *tabelas;
-	char tab_nome[60];
-	int aux = 0;
-
-	tabelas = fopen("lista_tabelas", "a+");
-
-	if(tabelas == NULL){
-		printf("Erro na abertura do arquivo\n");
-	}else{
-		while(aux != -1){
-			aux = fscanf(tabelas, "%s\n", tab_nome);
-			if(strcmp(tab_nome, nome) == 0){
-				return 0;
-			}
-		}
-	}
-	fclose(tabelas);
-	return 1;
-}
-
 //exibe o menu
 void exibir_menu (){
 	printf("            SGBD\n=============================\n");
@@ -230,15 +229,13 @@ void exibir_menu (){
 	printf(" 5 - buscar_valor\n");
 	printf(" 6 - apagar_linha\n");
 	printf(" 7 - apagar_tabela\n");
-	printf(" 8 - Extras\n    1 - ordenar_cres\n    2 - ordenar_des\n    3 - sintax\n    4 - inserir_coluna\n");
+	printf(" 8 - Extras\n    1 - ordenar_cres\n    2 - ordenar_des\n    3 - ajuda\n    4 - inserir_coluna\n    5 - apagar_coluna\n    6 - editar_linha\n    7 - copiar_tabela\n");
 	printf(" 9 - limpar_tela\n");
 	printf("10 - sair\n");
 	printf("=============================\n");
 }
-//atribui a string "NULL" para todos os campos da struct do tipo COMMAND
-//recebe uma struct do tipo COMMAND
-void limpa_comando(COMMAND *aux){
-	strcpy(aux->comando, "NULL");
-	strcpy(aux->nome_tabela, "NULL");
-	strcpy(aux->campos, "NULL");
+
+void waitFor (unsigned int secs) {
+    unsigned int retTime = time(0) + secs;   // Get finishing time.
+    while (time(0) < retTime);               // Loop until it arrives.
 }

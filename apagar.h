@@ -83,7 +83,7 @@ int apagar_linha (char* str_name, char* str_pk){
 	char** lines_data;
 	char aux_string[60];
 	strcpy(aux_string, str_name);
-	int pk_col, n_col, n_lin, aux_int;
+	int pk_col, n_col, n_lin, aux_int, aux_pk = 1;
 	//abrindo o canal setup e table
 	setup = fopen(strcat(aux_string, ".setup"), "r+");
 	table = fopen(str_name, "r");
@@ -112,10 +112,8 @@ int apagar_linha (char* str_name, char* str_pk){
 		//recebendo os nomes para determinar a posicao da pk
 		for(int i = 0; i < n_col; ++i){
 			aux_int = fscanf(table, "%s", *(lines_data+i));
-			for(int a = 0; a < strlen(*(lines_data+i)); ++a){
-				if(*(*(lines_data+i)+a) == '*'){
-					pk_col = i;
-				}
+			if(strchr(*(lines_data+i), '*') != NULL){
+				pk_col = i;
 			}
 		}
 		//abrindo file backup pra transferir os dados
@@ -154,6 +152,7 @@ int apagar_linha (char* str_name, char* str_pk){
 						//pode diminuir a as linhas do setup
 						fseek(setup, 0, SEEK_SET);
 						fprintf(setup, "%d %d\n", n_col, (n_lin-1));
+						aux_pk = 0;
 					}
 					//se chegar aqui eh pq uma das condicoes nao foi satisfeita, provavelmente
 					//a pk eh igual a inserida, caso contrario, EOF, o programa teria encerrado
@@ -174,6 +173,6 @@ int apagar_linha (char* str_name, char* str_pk){
 		//tornando a backup a nova tabela
 		remove(str_name);
 		rename("backup", str_name);
-		return 0;
+		return aux_pk;
 	}
 }

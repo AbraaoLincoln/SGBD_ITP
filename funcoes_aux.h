@@ -4,6 +4,8 @@ int check_int(char *valor);
 int check_float(char *str);
 int check_char(char *str);
 void mostrar_sintaxe_correta(char *comando);
+int check_tabela_existe(char* nome);
+int checa_pk_existe(char* str_nome, char* str_pk);
 
 //carrega a tabela na memoria
 //recebe o nome da tabela
@@ -48,6 +50,30 @@ char** carrega_tabela(char *nome_tab){
 	fclose(setup_tab);
 
 	return matriz;
+}
+//checa se a tabela existe
+//retorna 1 se a tabela não existe
+//retorna 0 caso a tabela exista
+int check_tabela_existe(char* nome){
+	FILE *tabelas;
+	char tab_nome[60];
+	int aux = 0;
+
+	tabelas = fopen("lista_tabelas", "a+");
+
+	if(tabelas == NULL){
+		printf("Erro na abertura do arquivo\n");
+	}else{
+		while(aux != -1){
+			aux = fscanf(tabelas, "%s\n", tab_nome);
+			if(strcmp(tab_nome, nome) == 0){
+				fclose(tabelas);
+				return 0;
+			}
+		}
+	}
+	fclose(tabelas);
+	return 1;
 }
 //=========================================Funcao check tipo==========================================
 //checa se a string eh composta por inteiro;
@@ -114,7 +140,7 @@ void mostrar_sintaxe_correta(char *comando){
 	}else if(strcmp(comando, "mostrar_tabela") == 0){
 		printf("Sintaxe : mostrar_tabela nome_tabela\n");
 	}else if(strcmp(comando, "buscar_valor") == 0){
-		printf("comando ainda vai ser definido!\n\n");
+		printf("Sintaxe : buscar_valor nome_tabela nome_campo\n");
 	}else if(strcmp(comando, "apagar_linha") == 0){
 		printf("Sintaxe: apagar_linha nome_tabela chave primaria da linha\n");
 	}else if(strcmp(comando, "apagar_tabela") == 0){
@@ -131,7 +157,52 @@ void mostrar_sintaxe_correta(char *comando){
 		printf("Sintaxe: limpar_tela\n");
 	}else if(strcmp(comando, "sair") == 0){
 		printf("sair\n");
+	}else if(strcmp(comando, "copiar_tabela") == 0){
+		printf("Sintaxe: copiar_tabela nome_tabela novo_nome\n");
+	}else if(strcmp(comando, "apagar_coluna") == 0){
+		printf("Sintaxe: apagar_coluna nome_tabela nome_campo\n");
+	}else if(strcmp(comando, "editar_linha") == 0){
+		printf("Sintaxe: editar_linha nome_tabela nome_campo chave_primaria\n");
 	}else{
 		printf("comando invalido!\n");
+	}
+}
+
+//1 eh erro
+//0 a pk existe
+int checa_pk_existe(char* str_nome, char* str_pk){
+	char aux[60];
+	strcpy(aux, str_nome);
+	strcat(aux, ".setup");
+	FILE *tabela, *setup;
+	tabela = fopen(str_nome, "r");
+	setup= fopen(aux, "r");
+	if(tabela == NULL || setup == NULL){
+		fclose(tabela);
+		fclose(setup);
+		return 1;
+	}else{
+		char campo[60];
+		int int_aux, n_col, col_pk, aux_ret = 1;
+		fscanf(setup, "%d", &n_col);
+		for(int i = 0; i < n_col; ++i){
+			fscanf(tabela, "%s", campo);
+			if (strchr(campo, '*') != NULL){
+				col_pk = i;
+			}
+		}
+		do{
+			for(int i = 0; i < n_col; ++i){
+				int_aux = fscanf(tabela, "%s", campo);
+				if (i == col_pk){
+					if(strcmp(campo, str_pk) == 0){
+						aux_ret = 0;
+					}
+				}
+			}
+		}while(int_aux != EOF);
+		fclose(tabela);
+		fclose(setup);
+		return aux_ret;
 	}
 }
