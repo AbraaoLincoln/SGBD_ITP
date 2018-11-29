@@ -517,7 +517,7 @@ int copiar_tabela(char *str_tabela_1, char *str_tabela_2){
 	}else{
 		//falta adicionar na lista de tabelas a tabela copia
 		char str_setup_1[60], str_setup_2[60];
-		FILE *tabela_1, *setup_1, *tabela_2, *setup_2;
+		FILE *tabela_1, *setup_1, *tabela_2, *setup_2, *lista;
 		strcpy(str_setup_1, str_tabela_1);
 		strcat(str_setup_1, ".setup");
 		strcpy(str_setup_2, str_tabela_2);
@@ -526,14 +526,16 @@ int copiar_tabela(char *str_tabela_1, char *str_tabela_2){
 		tabela_2 = fopen(str_tabela_2, "w");
 		setup_1 = fopen(str_setup_1, "r");
 		setup_2 = fopen(str_setup_2, "w");
+		lista = fopen("lista_tabelas", "a+");
 		printf("chegou aqui\n");
 		//checa se ocorreu erro na abertura
-		if(tabela_1 == NULL || tabela_2 == NULL || setup_1 == NULL || setup_2 == NULL){
+		if(tabela_1 == NULL || tabela_2 == NULL || setup_1 == NULL || setup_2 == NULL || lista == NULL){
 			printf("Erro: nao foi possivel realizar a abertura do arquivo\n");
 			fclose(tabela_1);
 			fclose(tabela_2);
 			fclose(setup_1);
 			fclose(setup_2);
+			fclose(lista);
 			remove(str_tabela_2);
 			remove(str_setup_2);
 			return (-1);
@@ -571,11 +573,13 @@ int copiar_tabela(char *str_tabela_1, char *str_tabela_2){
 				free(*(linha+i));
 			}
 			free(linha);
+			fprintf(lista, "%s\n",str_tabela_2);
 			//fecha canais
 			fclose(tabela_1);
 			fclose(tabela_2);
 			fclose(setup_1);
 			fclose(setup_2);
+			fclose(lista);
 			return 0;
 		}
 	}
