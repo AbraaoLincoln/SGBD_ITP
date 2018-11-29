@@ -8,7 +8,6 @@
 #include "exibicao.h"
 #include "busca.h"
 #include "funcoes_extras.h"
-#include "executa_testes.h"
 
 typedef struct command{
 	char comando[60];
@@ -85,9 +84,11 @@ int main(){
 						fscanf(stdin, "%[^\n]", aux.campos);
 						setbuf(stdin, NULL);
 						inserir_linha(aux.nome_tabela, aux.campos);
+						mostrar_tabela(aux.nome_tabela);
 						limpa_comando(&aux);
 					}else{
 						inserir_linha(aux.nome_tabela, aux.campos);
+						mostrar_tabela(aux.nome_tabela);
 						limpa_comando(&aux);
 					}
 				}
@@ -105,6 +106,7 @@ int main(){
 					limpa_comando(&aux);
 				}else{
 					if(apagar_linha (aux.nome_tabela, aux.campos) == 0){
+						mostrar_tabela(aux.nome_tabela);
 						limpa_comando(&aux);
 						printf("Linha apagada com sucesso!\n");
 					}else{
@@ -143,28 +145,47 @@ int main(){
 					}
 				}
 			}else if(strcmp(aux.comando, "inserir_coluna") == 0){
-				if(inserir_coluna(aux.nome_tabela, aux.campos)){
-					printf("Coluna criada com sucesso!\n");
+				if(check_tabela_existe(aux.nome_tabela)){
+					printf("Tabela %s nao existe\n", aux.nome_tabela);
 					limpa_comando(&aux);
 				}else{
-					printf("Erro de sintaxe!\n");
-					mostrar_sintaxe_correta(aux.comando);
-					limpa_comando(&aux);
+					if(inserir_coluna(aux.nome_tabela, aux.campos)){
+						mostrar_tabela(aux.nome_tabela);
+						printf("Coluna criada com sucesso!\n");
+						limpa_comando(&aux);
+					}else{
+						printf("Erro de sintaxe!\n");
+						mostrar_sintaxe_correta(aux.comando);
+						limpa_comando(&aux);
+					}
 				}
 			}else if(strcmp(aux.comando, "copiar_tabela") == 0){
 				if(strcmp(aux.nome_tabela, "NULL") == 0 || strcmp(aux.campos, "NULL") == 0){
 					printf("Erro de sintaxe!\n");
 					mostrar_sintaxe_correta(aux.comando);
 				}else{
-					copiar_tabela(aux.nome_tabela, aux.campos);
+					if(check_tabela_existe(aux.nome_tabela)){
+						printf("Tabela %s nao existe\n", aux.nome_tabela);
+						limpa_comando(&aux);
+					}else{
+						copiar_tabela(aux.nome_tabela, aux.campos);
+						limpa_comando(&aux);
+					}
 				}
 			}else if(strcmp(aux.comando, "apagar_coluna") == 0){
 				if(strcmp(aux.nome_tabela, "NULL") == 0 || strcmp(aux.campos, "NULL") == 0){
 					printf("Erro de sintaxe!\n");
 					mostrar_sintaxe_correta(aux.comando);
 				}else{
-					if(apagar_coluna(aux.nome_tabela, aux.campos) == 0){
-						printf("coluna apaga com sucesso\n");
+					if(check_tabela_existe(aux.nome_tabela)){
+						printf("Tabela %s nao existe\n", aux.nome_tabela);
+						limpa_comando(&aux);
+					}else{
+						if(apagar_coluna(aux.nome_tabela, aux.campos) == 0){
+							mostrar_tabela(aux.nome_tabela);
+							printf("coluna apagada com sucesso\n");
+						}
+						limpa_comando(&aux);
 					}
 				}
 			}else if(strcmp(aux.comando, "editar_linha") == 0){
@@ -172,6 +193,7 @@ int main(){
 					if(check_tabela_existe(aux.nome_tabela) == 0){
 						if(checa_pk_existe(aux.nome_tabela, pk) == 0){
 					 		editar_linha(aux.nome_tabela, aux_edit, pk);
+					 		mostrar_tabela(aux.nome_tabela);
 					 	}else{
 					 		printf("Chave primaria invalida\n");
 					 		mostrar_sintaxe_correta(aux.comando);

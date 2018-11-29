@@ -5,7 +5,7 @@ int tipo_campo(char *tipo);
 int checa_campos(char *campos, FILE *tab, FILE *setup);
 int checa_sintaxe_comando(char *command);
 int checa_pk(char *campos);
-void inserir_linha(char *tabela, char *valores);
+int inserir_linha(char *tabela, char *valores);
 int checa_pk_valor(char *tab, char *val, int col, int lin);
 int checa_valor(char *valores, char **entrada_usuario, char **tipos, int modo);
 int checa_tipo_valor(char *valor, int i, char **tipos);
@@ -51,7 +51,7 @@ void criar_tabela(char *nome, char* campo){
 	}
 
 	if(checa_pk(campo) == 0){
-		printf("Erro: Chave primaria!\n");
+		printf("Erro: chave primaria nao definida!\n");
 	}
 
 //Fechamento das streams.
@@ -190,10 +190,28 @@ int checa_sintaxe_comando(char *command){
 //insere uma nova linha na tabela indicada.
 //recebe o noma da tebale e os valores a serem adicionados
 //nao tem retorno.
-void inserir_linha(char *tabela, char *valores){
+int inserir_linha(char *tabela, char *valores){
 	FILE *setup, *tab;
 	char arquivo_setup[60], **tipos, aux[16], **entrada_usuario;
-	int colunas = 0, linhas = 0, conta = 0, conta_virgula = 0, ponto = 0;
+	int colunas = 0, linhas = 0, conta = 0, conta_virgula = 0, ponto = 0, espaco = 0;
+//verifica se algum dos valores tem espaco
+	for(int i = 0;i < strlen(valores);i++){
+		if(valores[i] == ' '){
+			espaco++;
+			break;
+		}
+		if(valores[i] == ','){
+			conta_virgula++;
+		}
+	}
+	if(espaco != 0){
+		printf("Erro ao inserir linha!\n");
+		printf("Erro: o %dº valor contem espaco!\n", conta_virgula+1);
+		printf("Sintaxe 1: inserir_linha nome_tabela valor1,valor2,valor3,...,valorN,\n");
+		printf("Sintaxe 2: inserir_linha nome_tabela \n");
+		return 0;
+	}
+	conta_virgula = 0;	
 //lendo do arquivo tabela.setup o numero de colunas e linhas.
 	strcpy(arquivo_setup, tabela);
 	strcat(arquivo_setup, ".setup");
@@ -284,7 +302,8 @@ void inserir_linha(char *tabela, char *valores){
 	for(int i = 0;i < colunas;i++){
 		free(tipos[i]);
 	}
-	free(tipos);	
+	free(tipos);
+	return 1;	
 }
 //checa se todos os valores passado pelo usuario e do tipo do campo
 //recebe a string dos valores, vetor de string com os tipo e um vetor de string onde sapara e armazena cada valor valido

@@ -527,7 +527,7 @@ int copiar_tabela(char *str_tabela_1, char *str_tabela_2){
 		setup_1 = fopen(str_setup_1, "r");
 		setup_2 = fopen(str_setup_2, "w");
 		lista = fopen("lista_tabelas", "a+");
-		printf("chegou aqui\n");
+		//printf("chegou aqui\n");
 		//checa se ocorreu erro na abertura
 		if(tabela_1 == NULL || tabela_2 == NULL || setup_1 == NULL || setup_2 == NULL || lista == NULL){
 			printf("Erro: nao foi possivel realizar a abertura do arquivo\n");
