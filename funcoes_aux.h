@@ -3,6 +3,7 @@ char** carrega_tabela(char *nome_tab);
 int check_int(char *valor);
 int check_float(char *str);
 int check_char(char *str);
+void abaixar_caixa(char *string);
 void mostrar_sintaxe_correta(char *comando);
 int check_tabela_existe(char* nome);
 int checa_pk_existe(char* str_nome, char* str_pk);

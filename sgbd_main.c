@@ -23,7 +23,7 @@ int main(){
 	char comando[60], pk[60], aux_edit[60];
 	COMMAND aux;
 	limpa_comando(&aux);
-
+/*
 	system("cls");
 	for(int i = 0; i < 2; ++i){
 		exibir_menu();
@@ -53,9 +53,9 @@ int main(){
 		system("cls");
 	}
 	exibir_menu();
-
-	//system("clear");
-	//exibir_menu();
+*/
+	system("clear");
+	exibir_menu();
 	do{
 		printf("Digite o comando >>> ");
 		fscanf(stdin, "%[^\n]",comando);
@@ -181,6 +181,18 @@ int main(){
 					printf("Erro de sintaxe\n");
 					mostrar_sintaxe_correta(aux.comando);
 				}
+			}else if(strcmp(aux.comando, "buscar_valor") == 0){
+				if(check_tabela_existe(aux.nome_tabela)){
+					printf("Tabela %s nao existe\n", aux.nome_tabela);
+					limpa_comando(&aux);
+				}else{ 
+					if(strcmp(aux.campos, "NULL") != 0){
+						main_busca(aux.nome_tabela, aux.campos);
+						limpa_comando(&aux);
+					}else{
+						printf("Erro: campo invalido\n");
+					}
+				}
 			}else{
 				printf("Erro: comando invalido!\n");
 			}
@@ -198,7 +210,7 @@ int main(){
 				limpa_comando(&aux);
 			}else if(strcmp(aux.comando, "sair") == 0){
 				printf("programa encerrado\n");
-			}else if(strcmp(aux.comando, "limpar_tela") == 0){
+			}else if(strcmp(aux.comando, "limpar_tela") == 0 || strcmp(aux.comando, "lt") == 0){
 				system("clear");
 				limpa_comando(&aux);
 				exibir_menu();
