@@ -23,6 +23,8 @@ int main(){
 	char comando[300], pk[60], aux_edit[60];
 	COMMAND aux;
 	limpa_comando(&aux);
+	strcpy(pk, "NULL");
+	strcpy(aux_edit, "NULL");
 
 	/*
 	system("cls");
@@ -149,14 +151,19 @@ int main(){
 					printf("Tabela %s nao existe\n", aux.nome_tabela);
 					limpa_comando(&aux);
 				}else{
-					if(inserir_coluna(aux.nome_tabela, aux.campos)){
-						mostrar_tabela(aux.nome_tabela);
-						printf("Coluna criada com sucesso!\n");
-						limpa_comando(&aux);
+					sscanf(aux.campos, "%s %s", pk, aux_edit);
+					if(strcmp(aux_edit, "NULL") != 0){
+						if(inserir_coluna(aux.nome_tabela, aux.campos)){
+							mostrar_tabela(aux.nome_tabela);
+							printf("Coluna criada com sucesso!\n");
+							limpa_comando(&aux);
+						}else{
+							printf("Erro de sintaxe!\n");
+							mostrar_sintaxe_correta(aux.comando);
+							limpa_comando(&aux);
+						}
 					}else{
-						printf("Erro de sintaxe!\n");
-						mostrar_sintaxe_correta(aux.comando);
-						limpa_comando(&aux);
+						printf("Erro: nome da nova coluna nao inserido!\n");
 					}
 				}
 			}else if(strcmp(aux.comando, "copiar_tabela") == 0){

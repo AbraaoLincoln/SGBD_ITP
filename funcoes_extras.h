@@ -362,7 +362,7 @@ void ajuda(char *comando){
 int inserir_coluna(char *nome_tabela, char *campo){
 	FILE *tab, *tab_setup;
 	char **tipos, **tabela, **entrada_usuario, tipo[16], nome_campo[60], tabela_setup[60], valores[100];
-	int colunas = 0, linhas = 0, espaco = 0, aux = 0, conta_colunas = 0, conta = 0, ponto = 0;
+	int colunas = 0, linhas = 0, espaco = 0, aux = 0, conta_colunas = 0, conta = 0, ponto = 0, tem_espaco = 0, conta_virgula = 0;
 
 	//separando o tipo e o nome do campo nas strigs tipo e nome_campo
 	sscanf(campo, "%s %s", tipo, nome_campo);
@@ -414,9 +414,56 @@ int inserir_coluna(char *nome_tabela, char *campo){
 			printf("Insira os valores da nova coluna:\n");
 			fscanf(stdin, "%[^\n]", valores);
 			setbuf(stdin, NULL);
-			//checa se a quantidade de valore passado e a mesma de linhas da tabela
+			//se a nova coluna for do tipo string chega se os valores estao sendo passado corretamente
+			if(strcmp(tipo, "string") == 0){
+				if(strlen(valores) == linhas-1){
+					aux++;
+				}else{
+					for(int i = 0;i < strlen(valores);i++){
+						if(valores[i] == ','){
+							conta_virgula++;
+						}
+					}
+					if(conta_virgula > linhas-1){
+						aux++;
+					}
+					conta_virgula = 0;
+				}
+			}
+
+			if(aux != 0){
+				printf("Erro: valores invalidos!\n");
+				for(int i = 0;i < colunas;i++){
+					free(tipos[i]);
+				}
+				free(tipos);
+				for(int i = 0;i < (colunas-1)*linhas;i++){
+					free(tabela[i]);
+				}
+				free(tabela);		
+				for(int i = 0;i < linhas-1;i++){
+					free(entrada_usuario[i]);
+				}
+				free(entrada_usuario);		
+				fclose(tab_setup);
+				return 0;
+			}
+			//checa se a quantidade de valore passado e a mesma de linhas da tabela e se os valores estao corretos
+			for(int i = 0;i < strlen(valores);i++){
+				if(valores[i] == ' '){
+					tem_espaco++;
+					break;
+				}
+				if(valores[i] == ','){
+					conta_virgula++;
+				}
+			}
 			conta = checa_valor(valores, entrada_usuario, tipos, colunas);
-			if(conta != linhas-1){
+			if(conta != linhas-1 || tem_espaco != 0){
+				if(tem_espaco != 0){
+					printf("Erro ao inserir os valores da nova coluna!\n");
+					printf("Erro: o %dº valor contem espaco!\n", conta_virgula+1);
+				}
 				printf("Erro: valores invalidos!\n");
 				for(int i = 0;i < colunas;i++){
 					free(tipos[i]);
