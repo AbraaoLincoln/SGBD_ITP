@@ -414,40 +414,6 @@ int inserir_coluna(char *nome_tabela, char *campo){
 			printf("Insira os valores da nova coluna:\n");
 			fscanf(stdin, "%[^\n]", valores);
 			setbuf(stdin, NULL);
-			//se a nova coluna for do tipo string chega se os valores estao sendo passado corretamente
-			if(strcmp(tipo, "string") == 0){
-				if(strlen(valores) == linhas-1){
-					aux++;
-				}else{
-					for(int i = 0;i < strlen(valores);i++){
-						if(valores[i] == ','){
-							conta_virgula++;
-						}
-					}
-					if(conta_virgula > linhas-1){
-						aux++;
-					}
-					conta_virgula = 0;
-				}
-			}
-
-			if(aux != 0){
-				printf("Erro: valores invalidos!\n");
-				for(int i = 0;i < colunas;i++){
-					free(tipos[i]);
-				}
-				free(tipos);
-				for(int i = 0;i < (colunas-1)*linhas;i++){
-					free(tabela[i]);
-				}
-				free(tabela);		
-				for(int i = 0;i < linhas-1;i++){
-					free(entrada_usuario[i]);
-				}
-				free(entrada_usuario);		
-				fclose(tab_setup);
-				return 0;
-			}
 			//checa se a quantidade de valore passado e a mesma de linhas da tabela e se os valores estao corretos
 			for(int i = 0;i < strlen(valores);i++){
 				if(valores[i] == ' '){
@@ -463,6 +429,7 @@ int inserir_coluna(char *nome_tabela, char *campo){
 				if(tem_espaco != 0){
 					printf("Erro ao inserir os valores da nova coluna!\n");
 					printf("Erro: o %dº valor contem espaco!\n", conta_virgula+1);
+					printf("Dica: use '_' ao inves de espaco.\n");
 				}
 				printf("Erro: valores invalidos!\n");
 				for(int i = 0;i < colunas;i++){

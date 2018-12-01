@@ -207,6 +207,7 @@ int inserir_linha(char *tabela, char *valores){
 	if(espaco != 0){
 		printf("Erro ao inserir linha!\n");
 		printf("Erro: o %dº valor contem espaco!\n", conta_virgula+1);
+		printf("Dica: use '_' ao inves de espaco.\n");
 		printf("Sintaxe 1: inserir_linha nome_tabela valor1,valor2,valor3,...,valorN,\n");
 		printf("Sintaxe 2: inserir_linha nome_tabela \n");
 		return 0;
@@ -338,11 +339,10 @@ int checa_valor(char *valores, char **entrada_usuario, char **tipos, int modo){
 			aux_indice++;
 		}
 			valor[aux_indice] = '\0';
-			aux_indice = 0;
-				
+			aux_indice = 0;	
 		if(modo == 0){
 			//checa se cada valor e do tipo do campo
-			if(checa_tipo_valor(valor, i-1, tipos)){
+			if(checa_tipo_valor(valor, i-1, tipos) == 1 || valor[0] == '\0'){
 				printf("Erro de sintaxe\n");
 				printf("O Valor '%s' nao e do tipo do campo(%s)\n", valor, tipos[i-1]);
 			}else{
@@ -351,9 +351,8 @@ int checa_valor(char *valores, char **entrada_usuario, char **tipos, int modo){
 			}
 		}else{
 			//checa se todos os valores sáo do tipo da nova coluna
-			if(checa_tipo_valor(valor, modo, tipos)){
+			if(checa_tipo_valor(valor, modo, tipos) == 1 || valor[0] == '\0'){
 				printf("Erro de sintaxe\n");
-				printf("O Valor '%s' nao e do tipo do campo(%s)\n", valor, tipos[i-1]);
 			}else{
 				conta++;
 				strcpy(entrada_usuario[i-1], valor);
